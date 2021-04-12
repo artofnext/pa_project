@@ -56,6 +56,20 @@ class Jnumber (var value: Double): Jvalue() {
     }
 }
 
+class Jbool (var value: Boolean): Jvalue() {
+
+    override fun toString(): String {
+        return value.toString()
+    }
+}
+
+class Jnull: Jvalue() {
+
+    override fun toString(): String {
+        return "null"
+    }
+}
+
 
 fun main() {
     var myArray = Jarray(mutableListOf<Jvalue>(
