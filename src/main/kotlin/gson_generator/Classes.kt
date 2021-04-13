@@ -1,10 +1,22 @@
 package gson_generator
 
-abstract class Jvalue
+abstract class Jvalue {
+    open fun accept(v: Visitor) {
+        v.visit(this)
+    }
+}
 
-class Jnode (key: String = "root", value: Jvalue) {
+interface Visitor {
+    fun visit(node: Jvalue) {}
+}
+
+class Jnode (key: String = "root", value: Jvalue): Jvalue() {
     var key: String = key
     var value: Jvalue = value
+
+    override fun accept(v: Visitor) {
+        v.visit(this)
+    }
 
     override fun toString(): String {
         var str = "${key}: "

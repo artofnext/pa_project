@@ -31,4 +31,7 @@ fun main() {
     println("root node is array")
     println(rootNode2)
 
+    val jsonStr = rootNode1.toString()
+    println(jsonStr)
+
 }
