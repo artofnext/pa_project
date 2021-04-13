@@ -7,8 +7,11 @@ abstract class Jvalue {
 interface Visitor {
 
     fun visit(value: Jnode)
+    fun afterVisit(value: Jnode)
     fun visit(value: Jobject)
+    fun afterVisit(value: Jobject)
     fun visit(value: Jarray)
+    fun afterVisit(value: Jarray)
     fun visit(value: Jstring)
     fun visit(value: Jnumber)
     fun visit(value: Jbool)
@@ -44,6 +47,18 @@ class StringifyVisitor : Visitor {
     override fun visit(value: Jnull) {
         str += "null"
     }
+
+    override fun afterVisit(value: Jnode) {
+        str += ","
+    }
+
+    override fun afterVisit(value: Jobject) {
+        str += " }"
+    }
+
+    override fun afterVisit(value: Jarray) {
+        str += " ]"
+    }
 }
 
 class Jnode (key: String = "root", value: Jvalue): Jvalue() {
@@ -53,6 +68,7 @@ class Jnode (key: String = "root", value: Jvalue): Jvalue() {
     override fun accept(v: Visitor) {
         v.visit(this)
         value.accept(v)
+        v.afterVisit(this)
     }
 
     override fun toString(): String {
@@ -72,6 +88,7 @@ class Jobject (var value: MutableList<Jnode>): Jvalue() {
     override fun accept(v: Visitor) {
         v.visit(this)
         value.forEach { it.accept(v) }.also { println("Jobject accept visitor") }
+        v.afterVisit(this)
     }
 
     override fun toString(): String {
@@ -91,6 +108,7 @@ class Jarray (var value: MutableList<Jvalue>): Jvalue() {
     override fun accept(v: Visitor) {
         v.visit(this)
         value.forEach { it.accept(v) }
+        v.afterVisit(this)
     }
 
     override fun toString(): String {
@@ -165,6 +183,8 @@ fun main() {
     rootObj.addNode(Jnode("node04", Jnumber(5.0)))
     var rootArray = Jarray(mutableListOf<Jvalue>(myArray, myObj))
     rootArray.addValue(Jobject(mutableListOf(Jnode("node05", Jstring("node 05 value")))))
+    rootObj.addNode(Jnode("node06", Jbool(true)))
+    rootObj.addNode(Jnode("node07", Jnull()))
 
     var rootNode1 = Jnode(value = rootObj)
     var rootNode2 = Jnode(value = rootArray)
