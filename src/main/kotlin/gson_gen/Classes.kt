@@ -84,61 +84,48 @@ class StringifyVisitor : Visitor {
 }
 
 class stringsVisitor():Visitor {
-    var str = ""
+    var strs = mutableListOf<String>()
     override fun visit(value: Jnode) {
-        TODO("Not yet implemented")
     }
 
     override fun visit(value: Jobject) {
-        TODO("Not yet implemented")
     }
 
     override fun visit(value: Jarray) {
-        TODO("Not yet implemented")
     }
 
     override fun visit(value: Jstring) {
-        TODO("Not yet implemented")
+        strs.add(value.toString())
     }
 
     override fun visit(value: Jnumber) {
-        TODO("Not yet implemented")
     }
 
     override fun visit(value: Jbool) {
-        TODO("Not yet implemented")
     }
 
     override fun visit(value: Jnull) {
-        TODO("Not yet implemented")
     }
 
     override fun afterVisit(value: Jnode) {
-        TODO("Not yet implemented")
     }
 
     override fun afterVisit(value: Jobject) {
-        TODO("Not yet implemented")
     }
 
     override fun afterVisit(value: Jarray) {
-        TODO("Not yet implemented")
     }
 
     override fun afterVisit(value: Jstring) {
-        TODO("Not yet implemented")
     }
 
     override fun afterVisit(value: Jnumber) {
-        TODO("Not yet implemented")
     }
 
     override fun afterVisit(value: Jbool) {
-        TODO("Not yet implemented")
     }
 
     override fun afterVisit(value: Jnull) {
-        TODO("Not yet implemented")
     }
 
 }
@@ -284,5 +271,10 @@ fun main() {
     rootNode1.accept(myStrVisitor)
     println("Stringifyed with Visitor" )
     println(myStrVisitor.str)
+
+    val strVisitor = stringsVisitor()
+    println("Find all strings with Visitor")
+    rootNode1.accept(strVisitor)
+    strVisitor.strs.forEach { println(it) }
 
 }
