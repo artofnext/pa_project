@@ -130,6 +130,57 @@ class stringsVisitor():Visitor {
 
 }
 
+class findObjByNameVisitor(val name: String):Visitor {
+
+    var objs = mutableListOf<Jvalue>()
+
+    override fun visit(value: Jnode) {
+        if (value.key == name) {
+            objs.add(value)
+        }
+    }
+
+    override fun visit(value: Jobject) {
+    }
+
+    override fun visit(value: Jarray) {
+    }
+
+    override fun visit(value: Jstring) {
+    }
+
+    override fun visit(value: Jnumber) {
+    }
+
+    override fun visit(value: Jbool) {
+    }
+
+    override fun visit(value: Jnull) {
+    }
+
+    override fun afterVisit(value: Jnode) {
+    }
+
+    override fun afterVisit(value: Jobject) {
+    }
+
+    override fun afterVisit(value: Jarray) {
+    }
+
+    override fun afterVisit(value: Jstring) {
+    }
+
+    override fun afterVisit(value: Jnumber) {
+    }
+
+    override fun afterVisit(value: Jbool) {
+    }
+
+    override fun afterVisit(value: Jnull) {
+    }
+
+}
+
 class Jnode (key: String = "root", value: Jvalue): Jvalue() {
     var key: String = key
     var value: Jvalue = value
@@ -276,5 +327,10 @@ fun main() {
     println("Find all strings with Visitor")
     rootNode1.accept(strVisitor)
     strVisitor.strs.forEach { println(it) }
+
+    val findObjVisitor = findObjByNameVisitor("node04")
+    println("Find objects by name with Visitor")
+    rootNode1.accept(findObjVisitor)
+    findObjVisitor.objs.forEach { println(it) }
 
 }
