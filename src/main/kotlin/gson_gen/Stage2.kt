@@ -4,18 +4,22 @@ import kotlin.reflect.KClass
 import kotlin.reflect.full.declaredMemberProperties
 import kotlin.reflect.full.memberProperties
 
-fun Number.toJnumber(): Jnumber {
-    return Jnumber(this as Double)
+
+fun Number.toJvalue(): Jvalue {
+    return Jnumber(this.toDouble())
 }
 
-fun String.toJstring(): Jstring {
+fun String.toJvalue(): Jvalue {
     return Jstring(this)
 }
 
-fun Boolean.toJbool(): Jbool {
+fun Boolean.toJvalue(): Jvalue {
     return Jbool(this)
 }
 
+fun Direction.toJvalue(): Jvalue {
+    return Jstring(this.toString())
+}
 
 enum class Direction {
     NORTH, SOUTH, WEST, EAST
@@ -35,7 +39,7 @@ var i = Direction.values()
 fun <T : Enum<*>> KClass<T>.toJarray(): Jarray {
     return Jarray(
         Class.forName(this.qualifiedName)
-            .enumConstants.map { e -> e.toString().toJstring() } as MutableList<Jvalue>
+            .enumConstants.map { e -> e.toString().toJvalue() } as MutableList<Jvalue>
     )
 }
 
@@ -48,8 +52,17 @@ fun <T : Enum<*>> KClass<T>.toJarray(): Jarray {
 //}
 
 fun main () {
+
+    println(Direction.NORTH.toJvalue())
     val direc = Direction::class.toJarray()
     val num = Numbers::class.toJarray()
     println(direc.toString())
     println(num.toString())
+    println(Numbers.THREE.number)
+
+    println("String".toJvalue())
+    println(256.toJvalue())
+    println(true.toJvalue())
 }
+
+
