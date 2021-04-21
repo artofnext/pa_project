@@ -45,6 +45,7 @@ fun <K, V > Map<K, V>.toJvalue(): Jvalue {
     return Jobject(mapList)
 }
 
+// recursive function
 fun dataClassToJnode(obj: Any, nodeName: String = "root"): Jnode {
     val clazz: KClass<Any> = obj::class as KClass<Any>
     val resultList = mutableListOf<Jnode>()
