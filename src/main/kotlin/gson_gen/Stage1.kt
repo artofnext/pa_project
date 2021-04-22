@@ -128,71 +128,71 @@ class Jnull: Jvalue() {
     }
 }
 
+class StringifyVisitor : Visitor {
+    var str = ""
+    override fun visit(node: Jnode) {
+        str += " \"${node.key}\": "
+    }
+
+    override fun visit(obj: Jobject) {
+        str += "{"
+    }
+
+    override fun visit(arr: Jarray) {
+        str += "["
+    }
+
+    override fun visit(value: Jstring) {
+        str += '"' + value.value + '"'
+    }
+
+    override fun visit(value: Jnumber) {
+        str += value.value.toString()
+    }
+
+    override fun visit(value: Jbool) {
+        str += value.value.toString()
+    }
+
+    override fun visit(value: Jnull) {
+        str += "null"
+    }
+
+    override fun afterVisit(value: Jnode) {
+        str += ""
+    }
+
+    override fun afterVisit(value: Jobject) {
+        str = str.dropLast(1) // delete trailing comma
+        str += " },"
+    }
+
+    override fun afterVisit(value: Jarray) {
+        str = str.dropLast(1) // delete trailing comma
+        str += " ],"
+    }
+
+    override fun afterVisit(value: Jstring) {
+        str += ","
+    }
+
+    override fun afterVisit(value: Jnumber) {
+        str += ","
+    }
+
+    override fun afterVisit(value: Jbool) {
+        str += ","
+    }
+
+    override fun afterVisit(value: Jnull) {
+        str += ","
+    }
+}
+
 
 fun main() {
 
-    class StringifyVisitor : Visitor {
-        var str = ""
-        override fun visit(node: Jnode) {
-            str += " \"${node.key}\": "
-        }
-
-        override fun visit(obj: Jobject) {
-            str += "{"
-        }
-
-        override fun visit(arr: Jarray) {
-            str += "["
-        }
-
-        override fun visit(value: Jstring) {
-            str += '"' + value.value + '"'
-        }
-
-        override fun visit(value: Jnumber) {
-            str += value.value.toString()
-        }
-
-        override fun visit(value: Jbool) {
-            str += value.value.toString()
-        }
-
-        override fun visit(value: Jnull) {
-            str += "null"
-        }
-
-        override fun afterVisit(value: Jnode) {
-            str += ""
-        }
-
-        override fun afterVisit(value: Jobject) {
-            str = str.dropLast(1) // delete trailing comma
-            str += " },"
-        }
-
-        override fun afterVisit(value: Jarray) {
-            str = str.dropLast(1) // delete trailing comma
-            str += " ],"
-        }
-
-        override fun afterVisit(value: Jstring) {
-            str += ","
-        }
-
-        override fun afterVisit(value: Jnumber) {
-            str += ","
-        }
-
-        override fun afterVisit(value: Jbool) {
-            str += ","
-        }
-
-        override fun afterVisit(value: Jnull) {
-            str += ","
-        }
-    }
-
-    class stringsVisitor():Visitor {
+    class StringsVisitor:Visitor {
         var strs = mutableListOf<String>()
         override fun visit(value: Jnode) {
         }
@@ -239,7 +239,7 @@ fun main() {
 
     }
 
-    class findObjByNameVisitor(val name: String):Visitor {
+    class FindObjByNameVisitor(val name: String):Visitor {
 
         var objs = mutableListOf<Jvalue>()
 
@@ -324,12 +324,12 @@ fun main() {
     println("Stringifyed with Visitor" )
     println(myStrVisitor.str)
 
-    val strVisitor = stringsVisitor()
+    val strVisitor = StringsVisitor()
     println("Find all strings with Visitor")
     rootNode1.accept(strVisitor)
     strVisitor.strs.forEach { println(it) }
 
-    val findObjVisitor = findObjByNameVisitor("node04")
+    val findObjVisitor = FindObjByNameVisitor("node04")
     println("Find objects by name with Visitor")
     rootNode1.accept(findObjVisitor)
     findObjVisitor.objs.forEach { println(it) }
