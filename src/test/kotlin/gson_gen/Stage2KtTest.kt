@@ -60,6 +60,42 @@ internal class Stage2KtTest {
 //    @Test
 //    fun toJarray() {
 //    }
+    @Test
+    fun getJvalueTest() {
+        assertTrue(getJvalue(5) is Jnumber)
+        assertTrue(getJvalue("string") is Jstring)
+        assertTrue(getJvalue(true) is Jbool)
+        assertTrue(getJvalue(user2) is Jnode)
+
+    }
+
+    @Test
+    fun toJvalue() {
+    }
+
+    @Test
+    fun testToJvalue() {
+    }
+
+    @Test
+    fun testToJvalue1() {
+    }
+
+    @Test
+    fun testToJvalue2() {
+    }
+
+    @Test
+    fun testToJvalue3() {
+    }
+
+    @Test
+    fun testToJvalue4() {
+    }
+
+    @Test
+    fun dataClassToJnode() {
+    }
 }
 //
 //fun main() {
