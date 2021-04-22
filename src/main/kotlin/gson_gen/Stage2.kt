@@ -28,15 +28,16 @@ fun Direction.toJvalue(): Jvalue {
 fun <E> List<E>.toJvalue(): Jvalue {
     val listList = mutableListOf<Jvalue>()
     this.forEach {
-            e -> listList.add(e.toString().toJvalue())
+            e -> listList.add(getJvalue(e))
     }
     return Jarray(listList)
 }
 
 fun <E> Set<E>.toJvalue(): Jvalue {
     val setList = mutableListOf<Jvalue>()
+
     this.forEach {
-            e -> setList.add(e.toString().toJvalue())
+            e -> setList.add(getJvalue(e))
     }
     return Jarray(setList)
 }
@@ -44,9 +45,24 @@ fun <E> Set<E>.toJvalue(): Jvalue {
 fun <K, V > Map<K, V>.toJvalue(): Jvalue {
     val mapList = mutableListOf<Jnode>()
     this.forEach {
-            (k, v) -> mapList.add(Jnode(k.toString(), v.toString().toJvalue()))
+            (k, v) -> mapList.add(Jnode(k.toString(), getJvalue(v)))
     }
     return Jobject(mapList)
+}
+
+fun getJvalue(value: Any?): Jvalue {
+    return when (value) {
+        is Number -> Jnumber(value)
+        is String -> Jstring(value)
+        is Boolean -> Jbool(value)
+        null -> Jnull()
+        is Set<Any?> -> value.toJvalue()
+        is Map<*, *> -> value.toJvalue()
+        is Enum<*> -> Jstring(value.toString())
+        else -> dataClassToJnode(value)
+    }
+
+//    return Jnode("mock", Jnull())
 }
 
 // recursive function
@@ -60,18 +76,17 @@ fun dataClassToJnode(obj: Any, nodeName: String = "root"): Jnode {
 
         clazz.declaredMemberProperties.forEach {
             val propVal = it.call(obj)
-            if(propVal == null) { resultList.add(Jnode(it.name, Jnull())) }
-            else if(propVal is String) {
-                resultList.add(Jnode(it.name, propVal.toString().toJvalue()))
-            } else if(propVal is Number) {
-                resultList.add(Jnode(it.name, propVal.toDouble().toJvalue()))
-            } else if(propVal is Boolean) {
-                resultList.add(Jnode(it.name, propVal.toJvalue()))
-            } else {
-                //if(propVal::class.isData) {
-                    resultList.add(dataClassToJnode(propVal, it.name))
-                //}
-            }
+            resultList.add(Jnode(it.name, getJvalue(propVal)))
+//            if(propVal == null) { resultList.add(Jnode(it.name, Jnull())) }
+//            else if(propVal is String) {
+//                resultList.add(Jnode(it.name, propVal.toString().toJvalue()))
+//            } else if(propVal is Number) {
+//                resultList.add(Jnode(it.name, propVal.toJvalue()))
+//            } else if(propVal is Boolean) {
+//                resultList.add(Jnode(it.name, propVal.toJvalue()))
+//            } else {
+//                    resultList.add(dataClassToJnode(propVal, it.name))
+//            }
 //            println(it.name + ": " + it.returnType + " = " + it.call(obj).toString())
         }
     return Jnode(nodeName, Jobject(resultList))
