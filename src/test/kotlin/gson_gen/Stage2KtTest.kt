@@ -14,7 +14,9 @@ internal class Stage2KtTest {
 
     data class User(val name: String, val age: Int, val props: Any?) {
         val sity = null
+        @Rename("renamed")
         val number = 10
+        @Remove
         val isGood = true
     }
 
@@ -157,7 +159,7 @@ internal class Stage2KtTest {
 
         val strVis3 = SerialiseVisitor()
         dataClassToJnode(user1).accept(strVis3)
-        val expected2 = "root:age:22isGood:truename:Alexnumber:10props:root:aux:root:aux:Person:is not a data classstatus:approvedstatus:approvedsity:null"
+        val expected2 = "root:age:22name:Alexrenamed:10props:root:aux:root:aux:Person:is not a data classstatus:approvedstatus:approvedsity:null"
         assertEquals(expected2, strVis3.str)
 
 

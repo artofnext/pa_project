@@ -2,6 +2,8 @@ package gson_gen
 
 import kotlin.reflect.KClass
 import kotlin.reflect.full.declaredMemberProperties
+import kotlin.reflect.full.findAnnotation
+import kotlin.reflect.full.hasAnnotation
 import kotlin.reflect.full.memberProperties
 
 
@@ -65,6 +67,12 @@ fun getJvalue(value: Any?): Jvalue {
 //    return Jnode("mock", Jnull())
 }
 
+@Target(AnnotationTarget.PROPERTY)
+annotation class Remove()
+
+@Target(AnnotationTarget.PROPERTY)
+annotation class Rename(val newName: String)
+
 // recursive function
 fun dataClassToJnode(obj: Any, nodeName: String = "root"): Jnode {
     val clazz: KClass<Any> = obj::class as KClass<Any>
@@ -76,7 +84,17 @@ fun dataClassToJnode(obj: Any, nodeName: String = "root"): Jnode {
 
         clazz.declaredMemberProperties.forEach {
             val propVal = it.call(obj)
-            resultList.add(Jnode(it.name, getJvalue(propVal)))
+
+            if (it.hasAnnotation<Remove>()) {
+                // I just too tired to be reasonable троха задовбавсі
+            }else if(it.hasAnnotation<Rename>()) {
+                resultList.add(Jnode(
+                    it.findAnnotation<Rename>()!!.newName,
+                    getJvalue(propVal)
+                ))
+            } else {
+                resultList.add(Jnode(it.name, getJvalue(propVal)))
+            }
 //            if(propVal == null) { resultList.add(Jnode(it.name, Jnull())) }
 //            else if(propVal is String) {
 //                resultList.add(Jnode(it.name, propVal.toString().toJvalue()))
