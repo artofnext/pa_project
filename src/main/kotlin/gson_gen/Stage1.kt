@@ -22,165 +22,6 @@ interface Visitor {
     fun afterVisit(value: Jnull)
 }
 
-class StringifyVisitor : Visitor {
-    var str = ""
-    override fun visit(node: Jnode) {
-        str += " \"${node.key}\": "
-    }
-
-    override fun visit(obj: Jobject) {
-        str += "{"
-    }
-
-    override fun visit(arr: Jarray) {
-        str += "["
-    }
-
-    override fun visit(value: Jstring) {
-        str += '"' + value.value + '"'
-    }
-
-    override fun visit(value: Jnumber) {
-        str += value.value.toString()
-    }
-
-    override fun visit(value: Jbool) {
-        str += value.value.toString()
-    }
-
-    override fun visit(value: Jnull) {
-        str += "null"
-    }
-
-    override fun afterVisit(value: Jnode) {
-        str += ""
-    }
-
-    override fun afterVisit(value: Jobject) {
-        str = str.dropLast(1) // delete trailing comma
-        str += " },"
-    }
-
-    override fun afterVisit(value: Jarray) {
-        str = str.dropLast(1) // delete trailing comma
-        str += " ],"
-    }
-
-    override fun afterVisit(value: Jstring) {
-        str += ","
-    }
-
-    override fun afterVisit(value: Jnumber) {
-        str += ","
-    }
-
-    override fun afterVisit(value: Jbool) {
-        str += ","
-    }
-
-    override fun afterVisit(value: Jnull) {
-        str += ","
-    }
-}
-
-class stringsVisitor():Visitor {
-    var strs = mutableListOf<String>()
-    override fun visit(value: Jnode) {
-    }
-
-    override fun visit(value: Jobject) {
-    }
-
-    override fun visit(value: Jarray) {
-    }
-
-    override fun visit(value: Jstring) {
-        strs.add(value.toString())
-    }
-
-    override fun visit(value: Jnumber) {
-    }
-
-    override fun visit(value: Jbool) {
-    }
-
-    override fun visit(value: Jnull) {
-    }
-
-    override fun afterVisit(value: Jnode) {
-    }
-
-    override fun afterVisit(value: Jobject) {
-    }
-
-    override fun afterVisit(value: Jarray) {
-    }
-
-    override fun afterVisit(value: Jstring) {
-    }
-
-    override fun afterVisit(value: Jnumber) {
-    }
-
-    override fun afterVisit(value: Jbool) {
-    }
-
-    override fun afterVisit(value: Jnull) {
-    }
-
-}
-
-class findObjByNameVisitor(val name: String):Visitor {
-
-    var objs = mutableListOf<Jvalue>()
-
-    override fun visit(value: Jnode) {
-        if (value.key == name) {
-            objs.add(value)
-        }
-    }
-
-    override fun visit(value: Jobject) {
-    }
-
-    override fun visit(value: Jarray) {
-    }
-
-    override fun visit(value: Jstring) {
-    }
-
-    override fun visit(value: Jnumber) {
-    }
-
-    override fun visit(value: Jbool) {
-    }
-
-    override fun visit(value: Jnull) {
-    }
-
-    override fun afterVisit(value: Jnode) {
-    }
-
-    override fun afterVisit(value: Jobject) {
-    }
-
-    override fun afterVisit(value: Jarray) {
-    }
-
-    override fun afterVisit(value: Jstring) {
-    }
-
-    override fun afterVisit(value: Jnumber) {
-    }
-
-    override fun afterVisit(value: Jbool) {
-    }
-
-    override fun afterVisit(value: Jnull) {
-    }
-
-}
-
 class Jnode (key: String = "root", value: Jvalue): Jvalue() {
     var key: String = key
     var value: Jvalue = value
@@ -251,7 +92,7 @@ class Jstring(var value: String): Jvalue() {
     }
 }
 
-class Jnumber (var value: Double): Jvalue() {
+class Jnumber (var value: Number): Jvalue() {
 
     override fun accept(v: Visitor) {
         v.visit(this)
@@ -289,6 +130,166 @@ class Jnull: Jvalue() {
 
 
 fun main() {
+
+    class StringifyVisitor : Visitor {
+        var str = ""
+        override fun visit(node: Jnode) {
+            str += " \"${node.key}\": "
+        }
+
+        override fun visit(obj: Jobject) {
+            str += "{"
+        }
+
+        override fun visit(arr: Jarray) {
+            str += "["
+        }
+
+        override fun visit(value: Jstring) {
+            str += '"' + value.value + '"'
+        }
+
+        override fun visit(value: Jnumber) {
+            str += value.value.toString()
+        }
+
+        override fun visit(value: Jbool) {
+            str += value.value.toString()
+        }
+
+        override fun visit(value: Jnull) {
+            str += "null"
+        }
+
+        override fun afterVisit(value: Jnode) {
+            str += ""
+        }
+
+        override fun afterVisit(value: Jobject) {
+            str = str.dropLast(1) // delete trailing comma
+            str += " },"
+        }
+
+        override fun afterVisit(value: Jarray) {
+            str = str.dropLast(1) // delete trailing comma
+            str += " ],"
+        }
+
+        override fun afterVisit(value: Jstring) {
+            str += ","
+        }
+
+        override fun afterVisit(value: Jnumber) {
+            str += ","
+        }
+
+        override fun afterVisit(value: Jbool) {
+            str += ","
+        }
+
+        override fun afterVisit(value: Jnull) {
+            str += ","
+        }
+    }
+
+    class stringsVisitor():Visitor {
+        var strs = mutableListOf<String>()
+        override fun visit(value: Jnode) {
+        }
+
+        override fun visit(value: Jobject) {
+        }
+
+        override fun visit(value: Jarray) {
+        }
+
+        override fun visit(value: Jstring) {
+            strs.add(value.toString())
+        }
+
+        override fun visit(value: Jnumber) {
+        }
+
+        override fun visit(value: Jbool) {
+        }
+
+        override fun visit(value: Jnull) {
+        }
+
+        override fun afterVisit(value: Jnode) {
+        }
+
+        override fun afterVisit(value: Jobject) {
+        }
+
+        override fun afterVisit(value: Jarray) {
+        }
+
+        override fun afterVisit(value: Jstring) {
+        }
+
+        override fun afterVisit(value: Jnumber) {
+        }
+
+        override fun afterVisit(value: Jbool) {
+        }
+
+        override fun afterVisit(value: Jnull) {
+        }
+
+    }
+
+    class findObjByNameVisitor(val name: String):Visitor {
+
+        var objs = mutableListOf<Jvalue>()
+
+        override fun visit(value: Jnode) {
+            if (value.key == name) {
+                objs.add(value)
+            }
+        }
+
+        override fun visit(value: Jobject) {
+        }
+
+        override fun visit(value: Jarray) {
+        }
+
+        override fun visit(value: Jstring) {
+        }
+
+        override fun visit(value: Jnumber) {
+        }
+
+        override fun visit(value: Jbool) {
+        }
+
+        override fun visit(value: Jnull) {
+        }
+
+        override fun afterVisit(value: Jnode) {
+        }
+
+        override fun afterVisit(value: Jobject) {
+        }
+
+        override fun afterVisit(value: Jarray) {
+        }
+
+        override fun afterVisit(value: Jstring) {
+        }
+
+        override fun afterVisit(value: Jnumber) {
+        }
+
+        override fun afterVisit(value: Jbool) {
+        }
+
+        override fun afterVisit(value: Jnull) {
+        }
+
+    }
+
     var myArray = Jarray(mutableListOf<Jvalue>(
         Jstring("one"),
         Jstring("two"),

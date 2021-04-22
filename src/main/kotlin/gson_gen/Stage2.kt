@@ -9,6 +9,10 @@ fun Number.toJvalue(): Jvalue {
     return Jnumber(this.toDouble())
 }
 
+fun Double.toJvalue(): Jvalue {
+    return Jnumber(this)
+}
+
 fun String.toJvalue(): Jvalue {
     return Jstring(this)
 }
@@ -57,8 +61,12 @@ fun dataClassToJnode(obj: Any, nodeName: String = "root"): Jnode {
         clazz.declaredMemberProperties.forEach {
             val propVal = it.call(obj)
             if(propVal == null) { resultList.add(Jnode(it.name, Jnull())) }
-            else if(propVal is String || propVal is Number || propVal is Boolean) {
+            else if(propVal is String) {
                 resultList.add(Jnode(it.name, propVal.toString().toJvalue()))
+            } else if(propVal is Number) {
+                resultList.add(Jnode(it.name, propVal.toDouble().toJvalue()))
+            } else if(propVal is Boolean) {
+                resultList.add(Jnode(it.name, propVal.toJvalue()))
             } else {
                 //if(propVal::class.isData) {
                     resultList.add(dataClassToJnode(propVal, it.name))
@@ -76,6 +84,28 @@ fun dataClassToJnode(obj: Any, nodeName: String = "root"): Jnode {
 
 }
 
+// recursive function
+fun dataClassToJnode1(obj: Any, nodeName: String = "root"): Jnode {
+    val clazz: KClass<Any> = obj::class as KClass<Any>
+    val resultList = mutableListOf<Jnode>()
+    if(!clazz.isData) {
+//        println("Is not a data class")
+        return Jnode(clazz.simpleName.toString(), Jstring("is not a data class"))
+    } else {
+
+        clazz.declaredMemberProperties.forEach {
+            val propVal = it.call(obj)
+            if(propVal == null) { resultList.add(Jnode(it.name, Jnull())) }
+            else if(propVal is String || propVal is Number || propVal is Boolean) {
+                resultList.add(Jnode(it.name, propVal.toString().toJvalue()))
+            } else {
+                resultList.add(dataClassToJnode(propVal, it.name))
+            }
+        }
+        return Jnode(nodeName, Jobject(resultList))
+    }
+}
+
 // test classes
 
 data class User(val name: String, val age: Int, val props: Any?) {
@@ -83,6 +113,8 @@ data class User(val name: String, val age: Int, val props: Any?) {
     val number = 10
     val isGood = true
 }
+
+data class User1(val name: String, val age: Double)
 
 data class Props(val status: String, val aux: Any)
 
@@ -138,6 +170,7 @@ fun main () {
     val props2: Props = Props("approved", person1)
     val props1: Props = Props("approved", props2)
     val user1 = User("Alex", 22, props1)
+
     println(dataClassToJnode(user1))
     println(dataClassToJnode(person1))
 
