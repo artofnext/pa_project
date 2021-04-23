@@ -63,8 +63,6 @@ fun getJvalue(value: Any?): Jvalue {
         is Enum<*> -> Jstring(value.toString())
         else -> dataClassToJnode(value)
     }
-
-//    return Jnode("mock", Jnull())
 }
 
 @Target(AnnotationTarget.PROPERTY)
@@ -95,26 +93,9 @@ fun dataClassToJnode(obj: Any, nodeName: String = "root"): Jnode {
             } else {
                 resultList.add(Jnode(it.name, getJvalue(propVal)))
             }
-//            if(propVal == null) { resultList.add(Jnode(it.name, Jnull())) }
-//            else if(propVal is String) {
-//                resultList.add(Jnode(it.name, propVal.toString().toJvalue()))
-//            } else if(propVal is Number) {
-//                resultList.add(Jnode(it.name, propVal.toJvalue()))
-//            } else if(propVal is Boolean) {
-//                resultList.add(Jnode(it.name, propVal.toJvalue()))
-//            } else {
-//                    resultList.add(dataClassToJnode(propVal, it.name))
-//            }
-//            println(it.name + ": " + it.returnType + " = " + it.call(obj).toString())
         }
     return Jnode(nodeName, Jobject(resultList))
     }
-//    println(clazz.qualifiedName)
-//    println(clazz.simpleName)
-//    println(clazz.isData)
-//    println(clazz.annotations)
-//    println(clazz.declaredMemberProperties)
-
 }
 
 // recursive function
@@ -175,29 +156,7 @@ fun <T : Enum<*>> KClass<T>.toJarray(): Jarray {
     )
 }
 
-//fun <T : Enum<*>> KClass<T>.join(skipFirst: Int = 0, skipLast: Int = 0): String {
-//    return this.declaredMemberProperties
-//        .drop(skipFirst)
-//        .dropLast(skipLast)
-//        .map { e -> e.name }
-//        .joinToString()
-//}
-
 fun main () {
-
-//    println(Direction.NORTH.toJvalue())
-//    val direc = Direction::class.toJarray()
-//    val num = Numbers::class.toJarray()
-//    println(direc.toString())
-//    println(num.toString())
-//    println(Numbers.THREE.number)
-//
-//    println("String".toJvalue())
-//    println(256.toJvalue())
-//    println(true.toJvalue())
-//
-//    val myMap = mapOf<String, String>("name1" to "val1", "name2" to "val2")
-//    println(myMap.toJvalue())
 
     val person1: Person = Person("Mary", 23)
     val props2: Props = Props("approved", person1)
@@ -206,9 +165,6 @@ fun main () {
 
     println(dataClassToJnode(user1))
     println(dataClassToJnode(person1))
-
-
-
 }
 
 
