@@ -112,33 +112,19 @@ internal class Stage2KtTest {
         assertTrue(getJvalue("string") is Jstring)
         assertTrue(getJvalue(true) is Jbool)
         assertTrue(getJvalue(user2) is Jnode)
-
-    }
-
-    @Test
-    fun toJvalueNumber() {
-    }
-
-    @Test
-    fun testToJvalueString() {
-    }
-
-    @Test
-    fun testToJvalueBoolean() {
-    }
-
-    @Test
-    fun testToJvalueList() {
     }
 
     @Test
     fun testToJvalueSet() {
-        val expected = Jarray(mutableListOf(Jstring("one"),Jstring("two"),Jstring("tree")))
-        assertEquals(expected, listOf("one","two","tree").toJvalue())
-    }
+//        val expected = Jarray(mutableListOf(Jstring("one"),Jstring("two"),Jstring("tree")))
+//        assertEquals(expected, listOf("one","two","tree").toJvalue())
 
-    @Test
-    fun testToJvalueMap() {
+        val strVis1 = SerialiseVisitor()
+        val strVis2 = SerialiseVisitor()
+        Jarray(mutableListOf(Jstring("one"),Jstring("two"),Jstring("tree"))).accept(strVis1)
+        val expected1 = strVis1.str
+        listOf("one","two","tree").toJvalue().accept(strVis2)
+        assertEquals(expected1, strVis2.str)
     }
 
     @Test
@@ -161,17 +147,6 @@ internal class Stage2KtTest {
         dataClassToJnode(user1).accept(strVis3)
         val expected2 = "root:age:22name:Alexrenamed:10props:root:aux:root:aux:Person:is not a data classstatus:approvedstatus:approvedsity:null"
         assertEquals(expected2, strVis3.str)
-
-
     }
-
 }
-//
-//fun main() {
-//    val test1 = Stage2KtTest()
-//    test1.testDataClassToJnode()
-//
-//    println(test1.user2Jnode.toString())
-//    println(dataClassToJnode(test1.user2))
-//
-//}
+
