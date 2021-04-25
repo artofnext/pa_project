@@ -190,107 +190,186 @@ class StringifyVisitor : Visitor {
     }
 }
 
-
-fun main() {
-
-    class StringsVisitor:Visitor {
-        var strs = mutableListOf<String>()
+// filter extension function with visitor pattern
+fun Jvalue.filter(meet: (Jvalue) -> Boolean): List<Jvalue> {
+    val result = mutableListOf<Jvalue>()
+    class FilterVisitor: Visitor {
         override fun visit(value: Jnode) {
-        }
-
-        override fun visit(value: Jobject) {
-        }
-
-        override fun visit(value: Jarray) {
-        }
-
-        override fun visit(value: Jstring) {
-            strs.add(value.toString())
-        }
-
-        override fun visit(value: Jnumber) {
-        }
-
-        override fun visit(value: Jbool) {
-        }
-
-        override fun visit(value: Jnull) {
-        }
-
-        override fun afterVisit(value: Jnode) {
-        }
-
-        override fun afterVisit(value: Jobject) {
-        }
-
-        override fun afterVisit(value: Jarray) {
-        }
-
-        override fun afterVisit(value: Jstring) {
-        }
-
-        override fun afterVisit(value: Jnumber) {
-        }
-
-        override fun afterVisit(value: Jbool) {
-        }
-
-        override fun afterVisit(value: Jnull) {
-        }
-
-    }
-
-    class FindObjByNameVisitor(val name: String):Visitor {
-
-        var objs = mutableListOf<Jvalue>()
-
-        override fun visit(value: Jnode) {
-            if (value.key == name) {
-                objs.add(value)
+            if (meet(value)) {
+                result.add(value)
             }
         }
 
         override fun visit(value: Jobject) {
+            if (meet(value)) {
+                result.add(value)
+            }
         }
 
         override fun visit(value: Jarray) {
+            if (meet(value)) {
+                result.add(value)
+            }
         }
 
         override fun visit(value: Jstring) {
+            if (meet(value)) {
+                result.add(value)
+            }
         }
 
         override fun visit(value: Jnumber) {
+            if (meet(value)) {
+                result.add(value)
+            }
         }
 
         override fun visit(value: Jbool) {
+            if (meet(value)) {
+                result.add(value)
+            }
         }
 
         override fun visit(value: Jnull) {
+            if (meet(value)) {
+                result.add(value)
+            }
         }
 
         override fun afterVisit(value: Jnode) {
+
         }
 
         override fun afterVisit(value: Jobject) {
+
         }
 
         override fun afterVisit(value: Jarray) {
+
         }
 
         override fun afterVisit(value: Jstring) {
+
         }
 
         override fun afterVisit(value: Jnumber) {
+
         }
 
         override fun afterVisit(value: Jbool) {
+
         }
 
         override fun afterVisit(value: Jnull) {
+
         }
 
     }
+    val allVisitor = FilterVisitor()
+    this.accept(allVisitor)
+    return result.toList()
+}
 
+fun main() {
+
+//    class StringsVisitor:Visitor {
+//        var strs = mutableListOf<String>()
+//        override fun visit(value: Jnode) {
+//        }
+//
+//        override fun visit(value: Jobject) {
+//        }
+//
+//        override fun visit(value: Jarray) {
+//        }
+//
+//        override fun visit(value: Jstring) {
+//            strs.add(value.toString())
+//        }
+//
+//        override fun visit(value: Jnumber) {
+//        }
+//
+//        override fun visit(value: Jbool) {
+//        }
+//
+//        override fun visit(value: Jnull) {
+//        }
+//
+//        override fun afterVisit(value: Jnode) {
+//        }
+//
+//        override fun afterVisit(value: Jobject) {
+//        }
+//
+//        override fun afterVisit(value: Jarray) {
+//        }
+//
+//        override fun afterVisit(value: Jstring) {
+//        }
+//
+//        override fun afterVisit(value: Jnumber) {
+//        }
+//
+//        override fun afterVisit(value: Jbool) {
+//        }
+//
+//        override fun afterVisit(value: Jnull) {
+//        }
+//
+//    }
+//
+//    class FindObjByNameVisitor(val name: String):Visitor {
+//
+//        var objs = mutableListOf<Jvalue>()
+//
+//        override fun visit(value: Jnode) {
+//            if (value.key == name) {
+//                objs.add(value)
+//            }
+//        }
+//
+//        override fun visit(value: Jobject) {
+//        }
+//
+//        override fun visit(value: Jarray) {
+//        }
+//
+//        override fun visit(value: Jstring) {
+//        }
+//
+//        override fun visit(value: Jnumber) {
+//        }
+//
+//        override fun visit(value: Jbool) {
+//        }
+//
+//        override fun visit(value: Jnull) {
+//        }
+//
+//        override fun afterVisit(value: Jnode) {
+//        }
+//
+//        override fun afterVisit(value: Jobject) {
+//        }
+//
+//        override fun afterVisit(value: Jarray) {
+//        }
+//
+//        override fun afterVisit(value: Jstring) {
+//        }
+//
+//        override fun afterVisit(value: Jnumber) {
+//        }
+//
+//        override fun afterVisit(value: Jbool) {
+//        }
+//
+//        override fun afterVisit(value: Jnull) {
+//        }
+//
+//    }
+//
     var myArray = Jarray(mutableListOf<Jvalue>(
         Jstring("one"),
         Jstring("two"),
@@ -314,25 +393,27 @@ fun main() {
 
     var rootNode1 = Jnode(value = rootObj)
     var rootNode2 = Jnode(value = rootArray)
-
+//
     val jsonStr = rootNode1.toString()
     println("Stringifyed with toString" )
     println(jsonStr)
+//
+//    val myStrVisitor = StringifyVisitor()
+//
+//    rootNode1.accept(myStrVisitor)
+//    println("Stringifyed with Visitor" )
+//    println(myStrVisitor.str)
+//
+//    val strVisitor = StringsVisitor()
+//    println("Find all strings with Visitor")
+//    rootNode1.accept(strVisitor)
+//    strVisitor.strs.forEach { println(it) }
+//
+//    val findObjVisitor = FindObjByNameVisitor("node04")
+//    println("Find objects by name with Visitor")
+//    rootNode1.accept(findObjVisitor)
+//    findObjVisitor.objs.forEach { println(it) }
 
-    val myStrVisitor = StringifyVisitor()
-
-    rootNode1.accept(myStrVisitor)
-    println("Stringifyed with Visitor" )
-    println(myStrVisitor.str)
-
-    val strVisitor = StringsVisitor()
-    println("Find all strings with Visitor")
-    rootNode1.accept(strVisitor)
-    strVisitor.strs.forEach { println(it) }
-
-    val findObjVisitor = FindObjByNameVisitor("node04")
-    println("Find objects by name with Visitor")
-    rootNode1.accept(findObjVisitor)
-    findObjVisitor.objs.forEach { println(it) }
-
+      val allStrings = rootNode1.filter { it::class == Jstring::class  }
+    println(allStrings)
 }

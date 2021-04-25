@@ -180,6 +180,14 @@ class Stage1KtTest {
         assertEquals(expected1, myStrVisitor1.strs)
     }
 
+    @Test
+    fun filterTest() {
+        // filter with predicate
+        val allStrings = rootNode1.filter { it::class == Jstring::class  }
+        val expected ="[\"node value\", \"node value\", \"node value\", \"one\", \"two\", \"three\"]"
+        assertEquals(expected, allStrings.toString())
+    }
+
     //Stage 1.2.2 Searching by properties
     class findObjByNameVisitor(val name: String):Visitor {
 
