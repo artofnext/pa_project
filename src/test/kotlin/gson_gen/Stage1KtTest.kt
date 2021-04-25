@@ -110,6 +110,7 @@ class Stage1KtTest {
     }
     @Test
     fun serializationTest() {
+        // use Visitor for JSON serialization
         val myStrVisitor1 = StringifyVisitor()
         //node that contains object
         rootNode1.accept(myStrVisitor1)
@@ -171,6 +172,7 @@ class Stage1KtTest {
     }
     @Test
     fun findStringsTest() {
+        // find all strings in Jobject
         val myStrVisitor1 = findStringsVisitor()
         //node that contains object
         rootNode1.accept(myStrVisitor1)
@@ -231,6 +233,7 @@ class Stage1KtTest {
     }
     @Test
     fun findValByNameTest() {
+        // find all properties by name
         val findObjVisitor = findObjByNameVisitor("node04")
         rootNode1.accept(findObjVisitor)
         val expected1 = arrayListOf(node4)
