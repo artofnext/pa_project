@@ -34,7 +34,7 @@ internal class Stage2KtTest {
         THREE(3),
         FOUR(4)
     }
-
+    // use visitor for serializing in testes
     class SerialiseVisitor: Visitor {
         var str = ""
         override fun visit(value: Jnode) {
@@ -118,7 +118,13 @@ internal class Stage2KtTest {
         val strVis1 = SerialiseVisitor()
         val strVis2 = SerialiseVisitor()
         // mocked object
-        Jarray(mutableListOf(Jstring("one"),Jstring("two"),Jstring("tree"))).accept(strVis1)
+        Jarray(
+            mutableListOf(
+                Jstring("one"),
+                Jstring("two"),
+                Jstring("tree")
+            )
+        ).accept(strVis1)
         val expected1 = strVis1.str
 
         listOf("one","two","tree").toJvalue().accept(strVis2)
@@ -127,20 +133,29 @@ internal class Stage2KtTest {
 
     @Test
     fun testToJvalueMap() {
-        // todo
-        // lists comparison by strings
+        // map comparison by strings
         val strVis1 = SerialiseVisitor()
         val strVis2 = SerialiseVisitor()
         // mocked object
-        Jarray(mutableListOf(Jstring("one"),Jstring("two"),Jstring("tree"))).accept(strVis1)
+        Jobject(
+            mutableListOf(
+                Jnode("first", Jstring("one")),
+                Jnode("second", Jstring("two")),
+                Jnode("third", Jstring("tree"))
+            )
+        ).accept(strVis1)
         val expected1 = strVis1.str
-
-        listOf("one","two","tree").toJvalue().accept(strVis2)
+        // map converted to Jobject
+        mapOf<String, String>(
+            "first" to "one",
+            "second" to "two",
+            "third" to "tree"
+        ).toJvalue().accept(strVis2)
         assertEquals(expected1, strVis2.str)
     }
 
     @Test
-    fun testDataClassToJnode() {
+    fun testDataClassToJobject() {
         // object comparison by strings
         // let's use serializations of both objects, mocked and generated
         val strVis1 = SerialiseVisitor()
