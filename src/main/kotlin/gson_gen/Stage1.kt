@@ -128,6 +128,106 @@ class Jnull: Jvalue() {
     }
 }
 
+// find all strings with visitor pattern
+class findStringsVisitor():Visitor {
+    var strs = mutableListOf<String>()
+    override fun visit(value: Jnode) {
+    }
+
+    override fun visit(value: Jobject) {
+    }
+
+    override fun visit(value: Jarray) {
+    }
+
+    override fun visit(value: Jstring) {
+        strs.add(value.toString().trim { i -> i == '"' }) //remove parentheses
+    }
+
+    override fun visit(value: Jnumber) {
+    }
+
+    override fun visit(value: Jbool) {
+    }
+
+    override fun visit(value: Jnull) {
+    }
+
+    override fun afterVisit(value: Jnode) {
+    }
+
+    override fun afterVisit(value: Jobject) {
+    }
+
+    override fun afterVisit(value: Jarray) {
+    }
+
+    override fun afterVisit(value: Jstring) {
+    }
+
+    override fun afterVisit(value: Jnumber) {
+    }
+
+    override fun afterVisit(value: Jbool) {
+    }
+
+    override fun afterVisit(value: Jnull) {
+    }
+
+}
+
+// find all properties by name with visitor pattern
+class findObjByNameVisitor(val name: String):Visitor {
+
+    var objs = mutableListOf<Jvalue>()
+
+    override fun visit(value: Jnode) {
+        if (value.key == name) {
+            objs.add(value)
+        }
+    }
+
+    override fun visit(value: Jobject) {
+    }
+
+    override fun visit(value: Jarray) {
+    }
+
+    override fun visit(value: Jstring) {
+    }
+
+    override fun visit(value: Jnumber) {
+    }
+
+    override fun visit(value: Jbool) {
+    }
+
+    override fun visit(value: Jnull) {
+    }
+
+    override fun afterVisit(value: Jnode) {
+    }
+
+    override fun afterVisit(value: Jobject) {
+    }
+
+    override fun afterVisit(value: Jarray) {
+    }
+
+    override fun afterVisit(value: Jstring) {
+    }
+
+    override fun afterVisit(value: Jnumber) {
+    }
+
+    override fun afterVisit(value: Jbool) {
+    }
+
+    override fun afterVisit(value: Jnull) {
+    }
+
+}
+
 // stringify to JSON
 class StringifyVisitor : Visitor {
     var str = ""

@@ -124,52 +124,7 @@ class Stage1KtTest {
     }
 
     //Stage 1.2.1 Searching all strings
-    class findStringsVisitor():Visitor {
-        var strs = mutableListOf<String>()
-        override fun visit(value: Jnode) {
-        }
 
-        override fun visit(value: Jobject) {
-        }
-
-        override fun visit(value: Jarray) {
-        }
-
-        override fun visit(value: Jstring) {
-            strs.add(value.toString().trim { i -> i == '"' }) //remove parentheses
-        }
-
-        override fun visit(value: Jnumber) {
-        }
-
-        override fun visit(value: Jbool) {
-        }
-
-        override fun visit(value: Jnull) {
-        }
-
-        override fun afterVisit(value: Jnode) {
-        }
-
-        override fun afterVisit(value: Jobject) {
-        }
-
-        override fun afterVisit(value: Jarray) {
-        }
-
-        override fun afterVisit(value: Jstring) {
-        }
-
-        override fun afterVisit(value: Jnumber) {
-        }
-
-        override fun afterVisit(value: Jbool) {
-        }
-
-        override fun afterVisit(value: Jnull) {
-        }
-
-    }
     @Test
     fun findStringsTest() {
         // find all strings in Jobject
@@ -189,56 +144,7 @@ class Stage1KtTest {
     }
 
     //Stage 1.2.2 Searching by properties
-    class findObjByNameVisitor(val name: String):Visitor {
 
-        var objs = mutableListOf<Jvalue>()
-
-        override fun visit(value: Jnode) {
-            if (value.key == name) {
-                objs.add(value)
-            }
-        }
-
-        override fun visit(value: Jobject) {
-        }
-
-        override fun visit(value: Jarray) {
-        }
-
-        override fun visit(value: Jstring) {
-        }
-
-        override fun visit(value: Jnumber) {
-        }
-
-        override fun visit(value: Jbool) {
-        }
-
-        override fun visit(value: Jnull) {
-        }
-
-        override fun afterVisit(value: Jnode) {
-        }
-
-        override fun afterVisit(value: Jobject) {
-        }
-
-        override fun afterVisit(value: Jarray) {
-        }
-
-        override fun afterVisit(value: Jstring) {
-        }
-
-        override fun afterVisit(value: Jnumber) {
-        }
-
-        override fun afterVisit(value: Jbool) {
-        }
-
-        override fun afterVisit(value: Jnull) {
-        }
-
-    }
     @Test
     fun findValByNameTest() {
         // find all properties by name
