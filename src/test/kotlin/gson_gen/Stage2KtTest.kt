@@ -1,10 +1,8 @@
 package gson_gen
 
 import junit.framework.Assert.assertEquals
-import org.hamcrest.MatcherAssert.assertThat
 //import org.junit.Assert.assertThat
 import org.junit.Test
-import kotlin.test.assertSame
 import kotlin.test.assertTrue
 
 
@@ -104,48 +102,60 @@ internal class Stage2KtTest {
     val props1: Props = Props("approved", props2)
     val user1 = User("Alex", 22, props1)
     val user2 = User1("Sam", 25.0)
-    val user2Jnode = Jnode(value = Jobject(mutableListOf(Jnode("age", Jnumber((25).toDouble())), Jnode("name", Jstring("Sam")))))
+    val user2Jnode = Jobject(mutableListOf(Jnode("age", Jnumber((25).toDouble())), Jnode("name", Jstring("Sam"))))
 
     @Test
     fun getJvalueTest() {
         assertTrue(getJvalue(5) is Jnumber)
         assertTrue(getJvalue("string") is Jstring)
         assertTrue(getJvalue(true) is Jbool)
-        assertTrue(getJvalue(user2) is Jnode)
+        assertTrue(getJvalue(user2) is Jobject)
     }
 
     @Test
-    fun testToJvalueSet() {
-//        val expected = Jarray(mutableListOf(Jstring("one"),Jstring("two"),Jstring("tree")))
-//        assertEquals(expected, listOf("one","two","tree").toJvalue())
-
+    fun testToJvalueList() {
+        // lists comparison by strings
         val strVis1 = SerialiseVisitor()
         val strVis2 = SerialiseVisitor()
+        // mocked object
         Jarray(mutableListOf(Jstring("one"),Jstring("two"),Jstring("tree"))).accept(strVis1)
         val expected1 = strVis1.str
+
+        listOf("one","two","tree").toJvalue().accept(strVis2)
+        assertEquals(expected1, strVis2.str)
+    }
+
+    @Test
+    fun testToJvalueMap() {
+        // todo
+        // lists comparison by strings
+        val strVis1 = SerialiseVisitor()
+        val strVis2 = SerialiseVisitor()
+        // mocked object
+        Jarray(mutableListOf(Jstring("one"),Jstring("two"),Jstring("tree"))).accept(strVis1)
+        val expected1 = strVis1.str
+
         listOf("one","two","tree").toJvalue().accept(strVis2)
         assertEquals(expected1, strVis2.str)
     }
 
     @Test
     fun testDataClassToJnode() {
-//        val expected: String =
-//            "\"root\": { \"age\": \"22\", \"isGood\": \"true\", \"name\": \"Alex\", \"number\": \"10\", \"props\": { \"aux\": { \"Person\": \"is not a data class\", \"status\": \"approved\" }, \"status\": \"approved\" }, \"sity\": null }"
-//        assertEquals(expected, dataClassToJnode(user1).toString())
-//        assertEquals(expected1, dataClassToJnode(user2))
-//        assertTrue { expected1 == dataClassToJnode(user2) }
-
+        // object comparison by strings
+        // let's use serializations of both objects, mocked and generated
         val strVis1 = SerialiseVisitor()
         val strVis2 = SerialiseVisitor()
+        // mocked object
         user2Jnode.accept(strVis1)
-        dataClassToJnode(user2).accept(strVis2)
+        // generated object from data class user2
+        dataClassToJobject(user2).accept(strVis2)
         val expected1: String = strVis1.str
-//        println(expected1)
+        // strings should be equal
         assertEquals(expected1, strVis2.str)
 
         val strVis3 = SerialiseVisitor()
-        dataClassToJnode(user1).accept(strVis3)
-        val expected2 = "root:age:22name:Alexrenamed:10props:root:aux:root:aux:Person:is not a data classstatus:approvedstatus:approvedsity:null"
+        dataClassToJobject(user1).accept(strVis3)
+        val expected2 = "age:22name:Alexrenamed:10props:aux:aux:is not a data classstatus:approvedstatus:approvedsity:null"
         assertEquals(expected2, strVis3.str)
     }
 }

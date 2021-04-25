@@ -128,6 +128,7 @@ class Jnull: Jvalue() {
     }
 }
 
+// stringify to JSON
 class StringifyVisitor : Visitor {
     var str = ""
     override fun visit(node: Jnode) {

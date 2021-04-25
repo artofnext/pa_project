@@ -4,7 +4,6 @@ import kotlin.reflect.KClass
 import kotlin.reflect.full.declaredMemberProperties
 import kotlin.reflect.full.findAnnotation
 import kotlin.reflect.full.hasAnnotation
-import kotlin.reflect.full.memberProperties
 
 
 fun Number.toJvalue(): Jvalue {
@@ -61,30 +60,36 @@ fun getJvalue(value: Any?): Jvalue {
         is Set<Any?> -> value.toJvalue()
         is Map<*, *> -> value.toJvalue()
         is Enum<*> -> Jstring(value.toString())
-        else -> dataClassToJnode(value)
+        else -> dataClassToJobject(value)
     }
 }
 
+// Annotation class to exclude property from data model
 @Target(AnnotationTarget.PROPERTY)
 annotation class Remove()
 
+// Annotation class to rename property from data model
+// accepts String as new property name
 @Target(AnnotationTarget.PROPERTY)
 annotation class Rename(val newName: String)
 
-// recursive function
-fun dataClassToJnode(obj: Any, nodeName: String = "root"): Jnode {
+// Function generate data model from data class object
+// accepts data class Object
+// returns Jobject
+fun dataClassToJobject(obj: Any): Jvalue {
     val clazz: KClass<Any> = obj::class as KClass<Any>
     val resultList = mutableListOf<Jnode>()
     if(!clazz.isData) {
 //        println("Is not a data class")
-        return Jnode(clazz.simpleName.toString(), Jstring("is not a data class"))
+        return Jstring("is not a data class")
     } else {
 
         clazz.declaredMemberProperties.forEach {
             val propVal = it.call(obj)
 
+            // todo there should be better solution
             if (it.hasAnnotation<Remove>()) {
-                // I just too tired to be reasonable троха задовбавсі
+                // I just too tired to be reasonable
             }else if(it.hasAnnotation<Rename>()) {
                 resultList.add(Jnode(
                     it.findAnnotation<Rename>()!!.newName,
@@ -94,29 +99,7 @@ fun dataClassToJnode(obj: Any, nodeName: String = "root"): Jnode {
                 resultList.add(Jnode(it.name, getJvalue(propVal)))
             }
         }
-    return Jnode(nodeName, Jobject(resultList))
-    }
-}
-
-// recursive function
-fun dataClassToJnode1(obj: Any, nodeName: String = "root"): Jnode {
-    val clazz: KClass<Any> = obj::class as KClass<Any>
-    val resultList = mutableListOf<Jnode>()
-    if(!clazz.isData) {
-//        println("Is not a data class")
-        return Jnode(clazz.simpleName.toString(), Jstring("is not a data class"))
-    } else {
-
-        clazz.declaredMemberProperties.forEach {
-            val propVal = it.call(obj)
-            if(propVal == null) { resultList.add(Jnode(it.name, Jnull())) }
-            else if(propVal is String || propVal is Number || propVal is Boolean) {
-                resultList.add(Jnode(it.name, propVal.toString().toJvalue()))
-            } else {
-                resultList.add(dataClassToJnode(propVal, it.name))
-            }
-        }
-        return Jnode(nodeName, Jobject(resultList))
+    return Jobject(resultList)
     }
 }
 
@@ -163,8 +146,13 @@ fun main () {
     val props1: Props = Props("approved", props2)
     val user1 = User("Alex", 22, props1)
 
-    println(dataClassToJnode(user1))
-    println(dataClassToJnode(person1))
+    val JSONVisitor = StringifyVisitor()
+
+    val jUser1 = dataClassToJobject(user1)
+    jUser1.accept(JSONVisitor)
+    println(jUser1)
+    println(JSONVisitor.str)
+    println(dataClassToJobject(person1))
 }
 
 
