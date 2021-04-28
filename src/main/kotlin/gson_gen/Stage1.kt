@@ -6,14 +6,15 @@ abstract class Jvalue {
 
 interface Visitor {
 
-    fun visit(value: Jnode)
+    // todo add boolean isNode
+    fun visit(value: Jnode) {} // todo implement empty here to avoid implement it in each class
     fun afterVisit(value: Jnode)
     fun visit(value: Jobject)
     fun afterVisit(value: Jobject)
     fun visit(value: Jarray)
     fun afterVisit(value: Jarray)
     fun visit(value: Jstring)
-    fun afterVisit(value: Jstring)
+    fun afterVisit(value: Jstring) // todo no need afterVisit for elementary
     fun visit(value: Jnumber)
     fun afterVisit(value: Jnumber)
     fun visit(value: Jbool)

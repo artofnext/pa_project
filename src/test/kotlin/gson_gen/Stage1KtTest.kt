@@ -1,7 +1,7 @@
 package gson_gen
 
-import org.junit.Assert.*
 import org.junit.Test
+import org.junit.Assert.*
 import kotlin.test.assertSame
 import kotlin.test.assertTrue
 
