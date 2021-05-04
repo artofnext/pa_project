@@ -64,3 +64,5 @@ distTmp/
 outTmp/
 /test.output
 /kotlin-native/dist
+
+*.jar

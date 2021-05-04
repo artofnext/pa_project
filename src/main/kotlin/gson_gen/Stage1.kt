@@ -1,12 +1,12 @@
 package gson_gen
 
 abstract class Jvalue {
+    open val isNode = false
     abstract fun accept(v: Visitor)
 }
 
 interface Visitor {
 
-    // todo add boolean isNode
     fun visit(value: Jnode) {} // todo implement empty here to avoid implement it in each class
     fun afterVisit(value: Jnode)
     fun visit(value: Jobject)
@@ -24,6 +24,7 @@ interface Visitor {
 }
 
 class Jnode (key: String = "root", value: Jvalue): Jvalue() {
+    override val isNode = true
     var key: String = key
     var value: Jvalue = value
 
