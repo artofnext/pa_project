@@ -31,7 +31,7 @@ class WindowTree(obj: Jvalue) {
 
     inner class JvalueTreeVisitor(): Visitor {
 
-        var parent = tree
+        var treeStack = Stack<Jvalue>()
 
         fun getItem() {
 
