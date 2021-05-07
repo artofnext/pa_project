@@ -8,23 +8,23 @@ abstract class Jvalue {
 interface Visitor {
 
     fun visit(value: Jnode) {} // todo implement empty here to avoid implement it in each class
-    fun afterVisit(value: Jnode)
-    fun visit(value: Jobject)
-    fun afterVisit(value: Jobject)
-    fun visit(value: Jarray)
-    fun afterVisit(value: Jarray)
-    fun visit(value: Jstring)
-    fun afterVisit(value: Jstring) // todo no need afterVisit for elementary
-    fun visit(value: Jnumber)
-    fun afterVisit(value: Jnumber)
-    fun visit(value: Jbool)
-    fun afterVisit(value: Jbool)
-    fun visit(value: Jnull)
-    fun afterVisit(value: Jnull)
+    fun afterVisit(value: Jnode) {}
+    fun visit(value: Jobject) {}
+    fun afterVisit(value: Jobject) {}
+    fun visit(value: Jarray) {}
+    fun afterVisit(value: Jarray) {}
+    fun visit(value: Jstring) {}
+    fun afterVisit(value: Jstring) {} // todo no need afterVisit for elementary
+    fun visit(value: Jnumber) {}
+    fun afterVisit(value: Jnumber) {}
+    fun visit(value: Jbool) {}
+    fun afterVisit(value: Jbool) {}
+    fun visit(value: Jnull) {}
+    fun afterVisit(value: Jnull) {}
 }
 
 class Jnode (key: String = "root", value: Jvalue): Jvalue() {
-    override val isNode = true
+
     var key: String = key
     var value: Jvalue = value
 
@@ -43,7 +43,7 @@ class Jnode (key: String = "root", value: Jvalue): Jvalue() {
 }
 
 class Jobject (var value: MutableList<Jnode>): Jvalue() {
-
+    override val isNode = true
     fun addNode(elem: Jnode) {
         value.add(elem)
     }

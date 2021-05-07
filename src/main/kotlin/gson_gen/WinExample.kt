@@ -4,6 +4,10 @@ import org.eclipse.swt.events.SelectionEvent
 import org.eclipse.swt.layout.FillLayout
 import org.eclipse.swt.layout.GridLayout
 import org.eclipse.swt.widgets.*
+import org.eclipse.swt.layout.GridData
+
+
+
 
 fun main() {
     FileTreeSkeleton().open()
@@ -61,8 +65,8 @@ class FileTreeSkeleton() {
 
 
 
-        val text = Text(shell, SWT.WRAP)
-        text.text = "public static void main(String[] args) {\n" +
+        val text = Text(shell, SWT.WRAP or SWT.READ_ONLY or SWT.BORDER)
+        text.text = "public static void gson_gen.main(String[] args) {\n" +
                 "\tDisplay display = new Display();\n" +
                 "\tShell shell = new Shell(display);\n" +
                 "\tshell.setText(\"Snippet 176\");\n" +
@@ -78,6 +82,13 @@ class FileTreeSkeleton() {
 //        label.text = "skeleton"
 
         val inputText = Text(shell, SWT.BORDER)
+        val gridData = GridData()
+
+        gridData.horizontalAlignment = GridData.FILL
+
+        gridData.grabExcessHorizontalSpace = true
+
+        inputText.setLayoutData(gridData)
 
         inputText.addModifyListener { println(inputText.text.toString()) }
 
@@ -91,6 +102,15 @@ class FileTreeSkeleton() {
 //                label.text = item.depth().toString()
             }
         })
+
+        val button1 = Button(shell, SWT.PUSH)
+        button1.text = "Collapse All"
+        button1.addSelectionListener(object: SelectionAdapter() {
+            override fun widgetSelected(e: SelectionEvent?) {
+                super.widgetSelected(e)
+                tree.collapseAll()
+            }
+        } )
 
     }
 
@@ -118,6 +138,8 @@ class FileTreeSkeleton() {
 // auxiliares para varrer a árvore
 
 fun Tree.expandAll() = traverse { it.expanded = true }
+
+fun Tree.collapseAll() = traverse {it.expanded = false}
 
 fun Tree.traverse(visitor: (TreeItem) -> Unit) {
     fun TreeItem.traverse() {
