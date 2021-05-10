@@ -34,23 +34,6 @@ class WindowTree(obj: Jvalue) {
         // use stack for refer parent node
         var treeStack = Stack<TreeItem>()
 
-        // helper workaround null pointer
-//        fun Stack<Widget>.getStack(): TreeItem {
-//            if (treeStack.stackObj.size > 0) {
-//                return treeStack.read()
-//            } else {
-//                return tree
-//            }
-//        }
-
-        // helper workaround null pointer
-//        fun Stack<Widget>.pullStack(): TreeItem {
-//            if (treeStack.stackObj.size > 0) {
-//                return treeStack.pull()
-//            } else {
-//                return tree
-//            }
-//        }
         private fun getTreeItem(): TreeItem {
             val current: TreeItem
             if (treeStack.stackObj.size < 1) {
@@ -175,13 +158,12 @@ class WindowTree(obj: Jvalue) {
         }
 
         override fun afterVisit(value: Jobject) {
-            str = str.dropLast(1) // delete trailing comma
+            str = str.dropLast(1) // delete trailing
             str += "\t".repeat(depth - 1) + "},\n"
             depth --
         }
 
         override fun afterVisit(value: Jarray) {
-//            str = str.dropLast(1) // delete trailing comma
             str += "\t".repeat(depth - 1) + "],\n"
             depth --
         }
@@ -227,7 +209,6 @@ class WindowTree(obj: Jvalue) {
 
         // init output text widget
         val textOut = Text(shell, SWT.WRAP or SWT.READ_ONLY or SWT.BORDER)
-
         val textOutgridData = GridData()
         textOutgridData.verticalAlignment = GridData.FILL
         textOutgridData.grabExcessVerticalSpace = true
@@ -235,18 +216,9 @@ class WindowTree(obj: Jvalue) {
         textOutgridData.grabExcessHorizontalSpace = true
         textOut.layoutData = textOutgridData
 
-//        textOut.text = "ersgherthsrsdth\n" +
-//                "rthdrthdrthrdth\n" +
-//                "drthdrthrdthdrth\n" +
-//                "rtdhdrjjmntdgtjyjt\n" +
-//                "dbdtyjdtry bjtjtjtdj\n" +
-//                " yjdtyjdt jdt jdtyj dtyr\n" +
-//                "dtyj dyj dtyj dtyj \n" +
-//                "dtryj dtyjdtyj dtj\n"
-
         tree.addSelectionListener(object : SelectionAdapter() {
             override fun widgetSelected(e: SelectionEvent) {
-                println("selected: " + tree.selection.first().data) // todo add stringify function invocation
+//                println("selected: " + tree.selection.first().data)
 
                 val jObj = tree.selection.first().data as Jvalue
                 val tabVisitor = StringifyTabVisitor()
@@ -257,16 +229,18 @@ class WindowTree(obj: Jvalue) {
 
         // init input text widget
         val inputText = Text(shell, SWT.BORDER)
-        inputText.message = "lkdjl"
+        inputText.message = "Type here to search"
         val inputGridData = GridData()
         inputGridData.horizontalAlignment = GridData.FILL
         inputGridData.grabExcessHorizontalSpace = true
         inputText.layoutData = inputGridData
         inputText.addModifyListener {
-            // todo add search function invocation
-            println(inputText.text.toString())
+//            println(inputText.text.toString())
             tree.filter {
-                inputText.text != null && !inputText.text.equals("") && it.text.contains(inputText.text)
+                inputText.text != null
+                        && !inputText.text.equals("")
+                        && inputText.text.length > 1
+                        && it.text.contains(inputText.text)
             }
         }
     }
@@ -276,57 +250,6 @@ class WindowTree(obj: Jvalue) {
         tree.expandAll()
         shell.pack()
         shell.setSize(700, 700)
-        shell.open()
-        val display = Display.getDefault()
-        while (!shell.isDisposed) {
-            if (!display.readAndDispatch()) display.sleep()
-        }
-        display.dispose()
-    }
-
-    fun addTree(tree: Tree) {
-        val a = TreeItem(tree, SWT.NONE)
-        a.text = "Alkjhl"
-        a.data = Dummy(1)
-
-        a.background = Color(RGB(23, 34,43))
-
-
-
-        val b = TreeItem(tree, SWT.NONE)
-        b.text = "Bdfgdf"
-        b.data = Dummy(2)
-
-        val b1 = TreeItem(b, SWT.NONE)
-        b1.text = "b1vbncgfh"
-        b1.data = Dummy(3)
-
-        val b2 = TreeItem(b, SWT.NONE)
-        b2.text = "b2vcnvcmn"
-        b2.data = Dummy(4)
-
-        val c = TreeItem(tree, SWT.NONE)
-        c.text = "Cvccvnbmng"
-        c.data = Dummy(5)
-
-        val c1 = TreeItem(c, SWT.NONE)
-        c1.text = "c1cvvncv"
-        c1.data = Dummy(6)
-
-        val c1a = TreeItem(c1, SWT.NONE)
-        c1a.text = "c1acvbmn"
-        c1a.data = Dummy(7)
-    }
-
-    fun Tree.addAsTreeItem(obj: Jnode) {
-        val item = TreeItem(this, SWT.NONE)
-        item.text = obj.key
-        item.data = obj.value
-    }
-
-    fun open(rootNode: Jvalue) {
-//        jvalueToTree(rootNode)
-        shell.pack()
         shell.open()
         val display = Display.getDefault()
         while (!shell.isDisposed) {
