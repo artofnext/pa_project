@@ -137,74 +137,88 @@ class WindowTree(obj: Jvalue) {
     // stringify to JSON with tabs
     class StringifyTabVisitor : Visitor {
         var str = ""
+        var depth = 0
         override fun visit(node: Jnode) {
-            str += " \"${node.key}\": "
+            str += "\t".repeat(depth) + "\"${node.key}\":\n"
+            depth ++
         }
 
         override fun visit(obj: Jobject) {
-            str += "{"
+            str += "\t".repeat(depth) + "{\n"
+            depth ++
         }
 
         override fun visit(arr: Jarray) {
-            str += "["
+            str += "\t".repeat(depth) +  "[\n"
+            depth ++
         }
 
         override fun visit(value: Jstring) {
-            str += '"' + value.value + '"'
+            str += "\t".repeat(depth) +  "\"" + value.value + "\",\n"
         }
 
         override fun visit(value: Jnumber) {
-            str += value.value.toString()
+            str += "\t".repeat(depth) + value.value.toString()
         }
 
         override fun visit(value: Jbool) {
-            str += value.value.toString()
+            str += "\t".repeat(depth) + value.value.toString()
         }
 
         override fun visit(value: Jnull) {
-            str += "null"
+            str += "\t".repeat(depth) + "null\n"
         }
 
         override fun afterVisit(value: Jnode) {
-            str += ""
+            str += "\n"
+            depth --
         }
 
         override fun afterVisit(value: Jobject) {
             str = str.dropLast(1) // delete trailing comma
-            str += " },\n"
+            str += "\t".repeat(depth - 1) + "},\n"
+            depth --
         }
 
         override fun afterVisit(value: Jarray) {
-            str = str.dropLast(1) // delete trailing comma
-            str += " ],\n"
+//            str = str.dropLast(1) // delete trailing comma
+            str += "\t".repeat(depth - 1) + "],\n"
+            depth --
         }
 
         override fun afterVisit(value: Jstring) {
-            str += ","
         }
 
         override fun afterVisit(value: Jnumber) {
-            str += ","
         }
 
         override fun afterVisit(value: Jbool) {
-            str += ","
         }
 
         override fun afterVisit(value: Jnull) {
-            str += ","
         }
     }
 
     init {
         // init window shell
         shell = Shell(Display.getDefault())
-        shell.setSize(1000, 1000)
-        shell.text = "File tree skeleton"
+        shell.text = "Data model"
         shell.layout = GridLayout(2, false)
+
+        var gridData = GridData()
+        gridData.horizontalAlignment = GridData.FILL
+        gridData.grabExcessHorizontalSpace = true
+
 
         // init tree widget
         tree = Tree(shell, SWT.SINGLE or SWT.BORDER)
+        val treeGridData = GridData()
+        treeGridData.verticalAlignment = GridData.FILL
+        treeGridData.grabExcessVerticalSpace = true
+        treeGridData.horizontalAlignment = GridData.FILL
+        treeGridData.grabExcessHorizontalSpace = true
+        tree.layoutData = treeGridData
+
 
         // replicate Jvalue data object to Tree
         val treeVisit = JvalueTreeVisitor()
@@ -213,7 +227,22 @@ class WindowTree(obj: Jvalue) {
 
         // init output text widget
         val textOut = Text(shell, SWT.WRAP or SWT.READ_ONLY or SWT.BORDER)
-        textOut.text = obj.toString()
+
+        val textOutgridData = GridData()
+        textOutgridData.verticalAlignment = GridData.FILL
+        textOutgridData.grabExcessVerticalSpace = true
+        textOutgridData.horizontalAlignment = GridData.FILL
+        textOutgridData.grabExcessHorizontalSpace = true
+        textOut.layoutData = textOutgridData
+
+//        textOut.text = "ersgherthsrsdth\n" +
+//                "rthdrthdrthrdth\n" +
+//                "drthdrthrdthdrth\n" +
+//                "rtdhdrjjmntdgtjyjt\n" +
+//                "dbdtyjdtry bjtjtjtdj\n" +
+//                " yjdtyjdt jdt jdtyj dtyr\n" +
+//                "dtyj dyj dtyj dtyj \n" +
+//                "dtryj dtyjdtyj dtj\n"
 
         tree.addSelectionListener(object : SelectionAdapter() {
             override fun widgetSelected(e: SelectionEvent) {
@@ -225,12 +254,14 @@ class WindowTree(obj: Jvalue) {
                 textOut.text = tabVisitor.str
             }
         })
+
         // init input text widget
         val inputText = Text(shell, SWT.BORDER)
-        val gridData = GridData()
-        gridData.horizontalAlignment = GridData.FILL
-        gridData.grabExcessHorizontalSpace = true
-        inputText.layoutData = gridData
+        inputText.message = "lkdjl"
+        val inputGridData = GridData()
+        inputGridData.horizontalAlignment = GridData.FILL
+        inputGridData.grabExcessHorizontalSpace = true
+        inputText.layoutData = inputGridData
         inputText.addModifyListener {
             // todo add search function invocation
             println(inputText.text.toString())
@@ -244,6 +275,7 @@ class WindowTree(obj: Jvalue) {
     fun openTree() {
         tree.expandAll()
         shell.pack()
+        shell.setSize(700, 700)
         shell.open()
         val display = Display.getDefault()
         while (!shell.isDisposed) {
