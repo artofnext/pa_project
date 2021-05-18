@@ -67,19 +67,19 @@ class WindowTree(obj: Jvalue) {
 
         override fun visit(value: Jstring) {
             val current = getTreeItem()
-            current.text = "string"
+            current.text = "string: $value"
             current.data = value
         }
 
         override fun visit(value: Jnumber) {
             val current = getTreeItem()
-            current.text = "number"
+            current.text = "number: $value"
             current.data = value
         }
 
         override fun visit(value: Jbool) {
             val current = getTreeItem()
-            current.text = "bool"
+            current.text = "bool: $value"
             current.data = value
         }
 
@@ -106,15 +106,6 @@ class WindowTree(obj: Jvalue) {
                 treeStack.pull()
             }
         }
-
-        override fun afterVisit(value: Jstring) {}
-
-        override fun afterVisit(value: Jnumber) {}
-
-        override fun afterVisit(value: Jbool) {}
-
-        override fun afterVisit(value: Jnull) {}
-
     }
 
     // stringify to JSON with tabs
@@ -159,25 +150,13 @@ class WindowTree(obj: Jvalue) {
 
         override fun afterVisit(value: Jobject) {
             str = str.dropLast(1) // delete trailing
-            str += "\t".repeat(depth - 1) + "},\n"
             depth --
+            str += "\t".repeat(depth) + "},\n"
         }
 
         override fun afterVisit(value: Jarray) {
-            str += "\t".repeat(depth - 1) + "],\n"
             depth --
-        }
-
-        override fun afterVisit(value: Jstring) {
-        }
-
-        override fun afterVisit(value: Jnumber) {
-        }
-
-        override fun afterVisit(value: Jbool) {
-        }
-
-        override fun afterVisit(value: Jnull) {
+            str += "\t".repeat(depth) + "],\n"
         }
     }
 
@@ -245,7 +224,6 @@ class WindowTree(obj: Jvalue) {
         }
     }
 
-    // todo delete
     fun openTree() {
         tree.expandAll()
         shell.pack()
@@ -315,9 +293,6 @@ fun main() {
 
     var rootNode1 = Jnode(value = rootObj)
 
-
     val win = WindowTree(rootNode1)
     win.openTree()
-
-
 }
