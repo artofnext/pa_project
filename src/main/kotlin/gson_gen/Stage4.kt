@@ -17,17 +17,28 @@ import org.eclipse.swt.widgets.*;
 
 interface Appearance {
     val name: String
-    val iconSet: String
+    val iconSet: MutableMap<String, String>
 
 }
 
 class DefaultSetup : Appearance {
     override val name: String
-        get() = "Test"
-    override val iconSet: String
-        get() = TODO("Not yet implemented")
-//    override val layoutManager: LayoutManager
-//        get() = java.awt.GridLayout(2, 1)
+        get() = "File_type_icons"
+    override val iconSet: MutableMap<String, String>
+        get() = mutableMapOf(
+        "NODE_IMG" to "folder-icon-32.png",
+        "LEAF_IMG" to "document-icon-32.png",
+        )
+}
+
+class CustomSetup : Appearance {
+    override val name: String
+        get() = "File_type_icons"
+    override val iconSet: MutableMap<String, String>
+        get() = mutableMapOf(
+            "NODE_IMG" to "files-icon-32.png",
+            "LEAF_IMG" to "help-icon-32.png",
+        )
 }
 
 class WindowPlugTree(obj: Jvalue) {
@@ -35,11 +46,7 @@ class WindowPlugTree(obj: Jvalue) {
     var tree: Tree
     val display = Display()
 
-    val iconSet: MutableMap<String, String> = mutableMapOf(
-        "NODE_IMG" to "folder-icon-32.png",
-        "LEAF_IMG" to "document-icon-32.png",
-    )
-
+    val icons: Appearance = DefaultSetup()
 
     inner class JvalueTreeVisitor(): Visitor {
 
@@ -62,9 +69,9 @@ class WindowPlugTree(obj: Jvalue) {
         private fun TreeItem.appendIcon() {
             var jvalue = this.data as Jvalue
             if(jvalue.isNode) {
-                this.image = Image(display, iconSet["NODE_IMG"])
+                this.image = Image(display, icons.iconSet["NODE_IMG"])
             } else {
-                this.image = Image(display, iconSet["LEAF_IMG"])
+                this.image = Image(display, icons.iconSet["LEAF_IMG"])
             }
         }
 
