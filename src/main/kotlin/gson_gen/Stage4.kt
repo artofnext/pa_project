@@ -1,5 +1,4 @@
 import gson_gen.*
-import gson_gen.WindowTree
 import org.eclipse.swt.SWT
 import org.eclipse.swt.events.SelectionAdapter
 import org.eclipse.swt.events.SelectionEvent
@@ -10,16 +9,48 @@ import org.eclipse.swt.layout.GridData
 import org.eclipse.swt.layout.GridLayout
 import org.eclipse.swt.widgets.*
 //import java.awt.Image
-import java.awt.LayoutManager
 
 import org.eclipse.swt.graphics.Image;
-import org.eclipse.swt.widgets.*;
+import org.eclipse.swt.events.MenuAdapter
+import org.eclipse.swt.events.MenuEvent
+
 
 interface Appearance {
     val name: String
     val iconSet: MutableMap<String, String>
 
 }
+
+interface Action {
+    val name: String
+    fun exec(treeItem: TreeItem)
+}
+
+class Delete: Action {
+    override val name: String
+        get() = "Open"
+
+    override fun exec(treeItem: TreeItem) {
+        val win = WindowTree(Jnode(value = (treeItem.data as Jvalue)))
+        win.openTree()
+    }
+
+}
+
+class Edit: Action {
+    override val name: String
+        get() = "Edit"
+
+    override fun exec(treeItem: TreeItem) {
+//        treeItem.text = "new text"
+        val window = EditWindow(treeItem.text)
+        window.open()
+
+
+    }
+
+}
+
 
 class DefaultSetup : Appearance {
     override val name: String
@@ -41,12 +72,75 @@ class CustomSetup : Appearance {
         )
 }
 
+class EditWindow(val value: String) {
+    val shell: Shell
+    var edited: String = ""
+        val display = Display.getDefault()
+    init {
+        // init window shell
+
+        shell = Shell(display)
+        shell.text = "Editor"
+        shell.layout = GridLayout(2, false)
+        shell.image = Image(display, "icon.png")
+
+
+        var gridData = GridData()
+        gridData.horizontalAlignment = GridData.FILL
+        gridData.grabExcessHorizontalSpace = true
+
+        // text field
+        val inputText = Text(shell, SWT.BORDER)
+
+        // Button
+        val button = Button(shell, SWT.PUSH)
+        button.text = "OK"
+        button.isEnabled = inputText.text.toString() != ""
+        button.addSelectionListener(object: SelectionAdapter() {
+            override fun widgetSelected(e: SelectionEvent) {
+                edited = inputText.text
+                println(edited)
+//                shell.dispose()
+            }
+        })
+        // init input text widget config
+        inputText.message = value
+        val inputGridData = GridData()
+        inputGridData.horizontalAlignment = GridData.FILL
+        inputGridData.grabExcessHorizontalSpace = true
+        inputText.layoutData = inputGridData
+        inputText.addModifyListener {
+            println(inputText.text.toString())
+            button.isEnabled = inputText.text.toString() != ""
+
+        }
+
+//        shell.addListener(SWT.Close) { event -> event.doit = false }
+
+//        shell.setVisible(false)
+    }
+
+    fun open() {
+        shell.pack()
+        shell.setSize(350, 100)
+        shell.open()
+//        val display = Display.getDefault()
+        while (!shell.isDisposed) {
+            if (!display.readAndDispatch()) display.sleep()
+        }
+        display.dispose()
+    }
+
+}
+
 class WindowPlugTree(obj: Jvalue) {
     val shell: Shell
     var tree: Tree
     val display = Display()
 
-    val icons: Appearance = DefaultSetup()
+    val icons: Appearance = CustomSetup()
+
+    val actions: MutableList<Action> = mutableListOf<Action>(Delete(), Edit())
 
     inner class JvalueTreeVisitor(): Visitor {
 
@@ -58,10 +152,8 @@ class WindowPlugTree(obj: Jvalue) {
             val current: TreeItem
             if (treeStack.stackObj.size < 1) {
                 current = TreeItem(tree, SWT.NONE)
-//                current.image = Image(display, "folder-icon.png")
             } else {
                 current = TreeItem(treeStack.read(), SWT.NONE)
-//                current.setImage(Image(display, "folder-icon.png"))
             }
             return current
         }
@@ -264,13 +356,40 @@ class WindowPlugTree(obj: Jvalue) {
                         && it.text.contains(inputText.text)
             }
         }
+
+        // right-click menu
+        val menu = Menu(tree)
+        tree.menu = menu
+        menu.addMenuListener(object : MenuAdapter() {
+            override fun menuShown(e: MenuEvent?) {
+                val items = menu.items
+                for (i in items.indices) {
+                    items[i].dispose()
+                }
+
+                actions.forEach {
+
+                val newItem = MenuItem(menu, SWT.NONE)
+//                newItem.text = "Menu for " + tree.selection[0].text
+                newItem.text = it.name
+                newItem.addSelectionListener(object: SelectionAdapter() {
+                    override fun widgetSelected(e: SelectionEvent) {
+                    println("selected: " + tree.selection.first().data)
+                        it.exec(tree.selection.first())
+                    }
+                })
+                }
+            }
+        })
+
+
 }
 
     fun openTree() {
         tree.expandAll()
 //        tree.setIcons()
         shell.pack()
-        shell.setSize(700, 700)
+        shell.setSize(1000, 700)
         shell.image = Image(display, "icon.png")
         shell.open()
         val display = Display.getDefault()
@@ -280,18 +399,15 @@ class WindowPlugTree(obj: Jvalue) {
         display.dispose()
     }
 
-    fun TreeItem.addIconSet() {
-        this.image = Image(display, "document-icon-32.png")
-    }
+//    fun TreeItem.addIconSet() {
+//        this.image = Image(display, "document-icon-32.png")
+//    }
 
 //    fun Tree.setIcons() = traverse {it.addIconSet()}
 
     // helper functions
 
     fun Tree.expandAll() = traverse { it.expanded = true }
-
-
-//    fun Tree.icons() = traverse { it.image = Image(display, "C:\\Users\\Iryna\\Documents\\Masters courses\\Iscte_logo\\icon.png") }
 
     fun Tree.collapseAll() = traverse {it.expanded = false}
 
@@ -321,6 +437,7 @@ class WindowPlugTree(obj: Jvalue) {
     }
 }
 
+
 fun main() {
 
     var myArray = Jarray(mutableListOf<Jvalue>(
@@ -339,10 +456,11 @@ fun main() {
 
     var rootObj = Jobject(mutableListOf<Jnode>(myNode1, myNode2))
     rootObj.addNode(Jnode("item04", Jnumber(5.0)))
-    var rootArray = Jarray(mutableListOf<Jvalue>(myArray, myObj))
-    rootArray.addValue(Jobject(mutableListOf(Jnode("item05", Jstring("node 05 value")))))
+//    var rootArray = Jarray(mutableListOf<Jvalue>(myArray, myObj))
+//    rootArray.addValue(Jobject(mutableListOf(Jnode("item05", Jstring("item05 value")))))
     rootObj.addNode(Jnode("item06", Jbool(true)))
     rootObj.addNode(Jnode("item07", Jnull()))
+//    rootObj.addNode(Jnode("array03", rootArray))
 
     var rootNode1 = Jnode(value = rootObj)
 
