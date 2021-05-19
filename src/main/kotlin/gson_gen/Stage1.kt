@@ -64,6 +64,7 @@ class Jobject (var value: MutableList<Jnode>): Jvalue() {
 
 class Jarray (var value: MutableList<Jvalue>): Jvalue() {
 
+    override val isNode = true
     fun addValue(elem: Jvalue) {
         value.add(elem)
     }

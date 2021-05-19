@@ -30,12 +30,16 @@ class DefaultSetup : Appearance {
 //        get() = java.awt.GridLayout(2, 1)
 }
 
-class WindowTree(obj: Jvalue) {
+class WindowPlugTree(obj: Jvalue) {
     val shell: Shell
     var tree: Tree
-    val iconSet: String = "icon set"
-
     val display = Display()
+
+    val iconSet: MutableMap<String, String> = mutableMapOf(
+        "NODE_IMG" to "folder-icon-32.png",
+        "LEAF_IMG" to "document-icon-32.png",
+    )
+
 
     inner class JvalueTreeVisitor(): Visitor {
 
@@ -47,57 +51,73 @@ class WindowTree(obj: Jvalue) {
             val current: TreeItem
             if (treeStack.stackObj.size < 1) {
                 current = TreeItem(tree, SWT.NONE)
-                current.image = Image(display, "C:\\Users\\Iryna\\Documents\\Masters courses\\Iscte_logo\\icon.png")
+//                current.image = Image(display, "folder-icon.png")
             } else {
                 current = TreeItem(treeStack.read(), SWT.NONE)
-                current.setImage(Image(display, "C:\\Users\\Iryna\\Documents\\Masters courses\\Iscte_logo\\icon.png"))
+//                current.setImage(Image(display, "folder-icon.png"))
             }
             return current
+        }
+
+        private fun TreeItem.appendIcon() {
+            var jvalue = this.data as Jvalue
+            if(jvalue.isNode) {
+                this.image = Image(display, iconSet["NODE_IMG"])
+            } else {
+                this.image = Image(display, iconSet["LEAF_IMG"])
+            }
         }
 
         override fun visit(value: Jnode) {
             val current = getTreeItem()
             current.text = value.key
             current.data = value.value
+            current.appendIcon()
             treeStack.push(current)
         }
 
         override fun visit(value: Jobject) {
-            val current = getTreeItem()
-            current.text = "object"
-            current.data = value
-            treeStack.push(current)
+//            val current = getTreeItem()
+//            current.text = "object"
+//            current.data = value
+//            current.appendIcon()
+//            treeStack.push(current)
         }
 
         override fun visit(value: Jarray) {
-            val current = getTreeItem()
-            current.text = "array"
-            current.data = value
-            treeStack.push(current)
+//            val current = getTreeItem()
+//            current.text = "array"
+//            current.data = value
+//            current.appendIcon()
+//            treeStack.push(current)
         }
 
         override fun visit(value: Jstring) {
             val current = getTreeItem()
             current.text = "string: $value"
             current.data = value
+//            current.appendIcon()
         }
 
         override fun visit(value: Jnumber) {
             val current = getTreeItem()
             current.text = "number: $value"
             current.data = value
+//            current.appendIcon()
         }
 
         override fun visit(value: Jbool) {
             val current = getTreeItem()
             current.text = "bool: $value"
             current.data = value
+//            current.appendIcon()
         }
 
         override fun visit(value: Jnull) {
             val current = getTreeItem()
             current.text = "null"
             current.data = Jstring("null")
+//            current.appendIcon()
         }
 
         override fun afterVisit(value: Jnode) {
@@ -108,13 +128,13 @@ class WindowTree(obj: Jvalue) {
 
         override fun afterVisit(value: Jobject) {
             if(treeStack.stackObj.size > 0) {
-                treeStack.pull()
+//                treeStack.pull()
             }
         }
 
         override fun afterVisit(value: Jarray) {
             if(treeStack.stackObj.size > 0) {
-                treeStack.pull()
+//                treeStack.pull()
             }
         }
     }
@@ -237,13 +257,14 @@ class WindowTree(obj: Jvalue) {
                         && it.text.contains(inputText.text)
             }
         }
-    }
+}
 
     fun openTree() {
         tree.expandAll()
+//        tree.setIcons()
         shell.pack()
         shell.setSize(700, 700)
-        shell.image = Image(display, "C:\\Users\\Iryna\\Documents\\Masters courses\\Iscte_logo\\icon.png")
+        shell.image = Image(display, "icon.png")
         shell.open()
         val display = Display.getDefault()
         while (!shell.isDisposed) {
@@ -252,9 +273,18 @@ class WindowTree(obj: Jvalue) {
         display.dispose()
     }
 
+    fun TreeItem.addIconSet() {
+        this.image = Image(display, "document-icon-32.png")
+    }
+
+//    fun Tree.setIcons() = traverse {it.addIconSet()}
+
     // helper functions
 
     fun Tree.expandAll() = traverse { it.expanded = true }
+
+
+//    fun Tree.icons() = traverse { it.image = Image(display, "C:\\Users\\Iryna\\Documents\\Masters courses\\Iscte_logo\\icon.png") }
 
     fun Tree.collapseAll() = traverse {it.expanded = false}
 
@@ -292,23 +322,23 @@ fun main() {
         Jstring("three")
     ))
     var myObj = Jobject(mutableListOf<Jnode>(
-        Jnode("node01", Jstring("node value")),
-        Jnode("node02", Jstring("node value")),
-        Jnode("node03", Jstring("node value"))
+        Jnode("item01", Jstring("Verba volant, scripta manent")),
+        Jnode("item02", Jstring("Verba volant, scripta manent")),
+        Jnode("item03", Jstring("Verba volant, scripta manent"))
     ))
 
-    var myNode1 = Jnode("myNode1", myObj)
-    var myNode2 = Jnode("myNode2", myArray)
+    var myNode1 = Jnode("object01", myObj)
+    var myNode2 = Jnode("array02", myArray)
 
     var rootObj = Jobject(mutableListOf<Jnode>(myNode1, myNode2))
-    rootObj.addNode(Jnode("node04", Jnumber(5.0)))
+    rootObj.addNode(Jnode("item04", Jnumber(5.0)))
     var rootArray = Jarray(mutableListOf<Jvalue>(myArray, myObj))
-    rootArray.addValue(Jobject(mutableListOf(Jnode("node05", Jstring("node 05 value")))))
-    rootObj.addNode(Jnode("node06", Jbool(true)))
-    rootObj.addNode(Jnode("node07", Jnull()))
+    rootArray.addValue(Jobject(mutableListOf(Jnode("item05", Jstring("node 05 value")))))
+    rootObj.addNode(Jnode("item06", Jbool(true)))
+    rootObj.addNode(Jnode("item07", Jnull()))
 
     var rootNode1 = Jnode(value = rootObj)
 
-    val win = WindowTree(rootNode1)
+    val win = WindowPlugTree(rootNode1)
     win.openTree()
 }
