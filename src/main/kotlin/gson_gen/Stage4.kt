@@ -1,4 +1,5 @@
-import gson_gen.*
+package gson_gen
+
 import org.eclipse.swt.SWT
 import org.eclipse.swt.events.SelectionAdapter
 import org.eclipse.swt.events.SelectionEvent
@@ -13,20 +14,22 @@ import org.eclipse.swt.widgets.*
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.events.MenuAdapter
 import org.eclipse.swt.events.MenuEvent
+import java.io.File
+import java.util.*
+import kotlin.reflect.KClass
+import kotlin.reflect.KMutableProperty
+import kotlin.reflect.full.createInstance
+import kotlin.reflect.full.declaredMemberProperties
+import kotlin.reflect.full.hasAnnotation
+import kotlin.reflect.jvm.isAccessible
 
-
-interface Appearance {
-    val name: String
-    val iconSet: MutableMap<String, String>
-
-}
 
 interface Action {
     val name: String
     fun exec(treeItem: TreeItem)
 }
 
-class Delete: Action {
+class Open: Action {
     override val name: String
         get() = "Open"
 
@@ -51,6 +54,11 @@ class Edit: Action {
 
 }
 
+interface Appearance {
+    val name: String
+    val iconSet: MutableMap<String, String>
+
+}
 
 class DefaultSetup : Appearance {
     override val name: String
@@ -72,10 +80,17 @@ class CustomSetup : Appearance {
         )
 }
 
+@Target(AnnotationTarget.PROPERTY)
+annotation class InjectAdd
+
+@Target(AnnotationTarget.PROPERTY)
+annotation class Inject
+
 class EditWindow(val value: String) {
     val shell: Shell
     var edited: String = ""
-        val display = Display.getDefault()
+    val display = Display.getDefault()
+
     init {
         // init window shell
 
@@ -85,9 +100,12 @@ class EditWindow(val value: String) {
         shell.image = Image(display, "icon.png")
 
 
-        var gridData = GridData()
+        val gridData = GridData()
         gridData.horizontalAlignment = GridData.FILL
         gridData.grabExcessHorizontalSpace = true
+
+//        val messageText = Text(shell, SWT.BORDER)
+//        messageText.text = "New name:"
 
         // text field
         val inputText = Text(shell, SWT.BORDER)
@@ -100,7 +118,8 @@ class EditWindow(val value: String) {
             override fun widgetSelected(e: SelectionEvent) {
                 edited = inputText.text
                 println(edited)
-//                shell.dispose()
+                // TODO save value and close
+//                shell.close()
             }
         })
         // init input text widget config
@@ -133,14 +152,20 @@ class EditWindow(val value: String) {
 
 }
 
-class WindowPlugTree(obj: Jvalue) {
+class WindowPlugTree() {
+    val obj: Jvalue
     val shell: Shell
     var tree: Tree
     val display = Display()
 
-    val icons: Appearance = CustomSetup()
+//    @Inject
+//    val icons: Appearance = CustomSetup()
+    @Inject
+    lateinit var icons: Appearance
 
-    val actions: MutableList<Action> = mutableListOf<Action>(Delete(), Edit())
+//    val actions: MutableList<Action> = mutableListOf<Action>(Open(), Edit())
+    @InjectAdd
+    lateinit var actions: MutableList<gson_gen.Action>
 
     inner class JvalueTreeVisitor(): Visitor {
 
@@ -291,16 +316,48 @@ class WindowPlugTree(obj: Jvalue) {
     }
 
     init {
+        // TODO workaround parameter passing ===============================
+
+        fun createJvalueInstance(): Jnode {
+            var myArray = Jarray(
+                mutableListOf<Jvalue>(
+                    Jstring("one"),
+                    Jstring("two"),
+                    Jstring("three")
+                )
+            )
+            var myObj = Jobject(
+                mutableListOf<Jnode>(
+                    Jnode("item01", Jstring("Verba volant, scripta manent")),
+                    Jnode("item02", Jstring("Verba volant, scripta manent")),
+                    Jnode("item03", Jstring("Verba volant, scripta manent"))
+                )
+            )
+
+            var myNode1 = Jnode("object01", myObj)
+            var myNode2 = Jnode("array02", myArray)
+
+            var rootObj = Jobject(mutableListOf<Jnode>(myNode1, myNode2))
+            rootObj.addNode(Jnode("item04", Jnumber(5.0)))
+            rootObj.addNode(Jnode("item06", Jbool(true)))
+            rootObj.addNode(Jnode("item07", Jnull()))
+
+            var rootNode1 = Jnode(value = rootObj)
+
+            return rootNode1
+        }
+
+        obj = createJvalueInstance()
+
+        // TODO end ========================================================
         // init window shell
 
         shell = Shell(display)
-        shell.text = "Data model"
+        shell.text = "Data model visualisation"
         shell.layout = GridLayout(2, false)
 //        shell.image = display.getSystemImage(SWT.ICON_ERROR)
 
-
-
-        var gridData = GridData()
+        val gridData = GridData()
         gridData.horizontalAlignment = GridData.FILL
         gridData.grabExcessHorizontalSpace = true
 
@@ -315,11 +372,6 @@ class WindowPlugTree(obj: Jvalue) {
         tree.layoutData = treeGridData
 
 
-        // replicate Jvalue data object to Tree
-        val treeVisit = JvalueTreeVisitor()
-        obj.accept(treeVisit)
-
-
         // init output text widget
         val textOut = Text(shell, SWT.WRAP or SWT.READ_ONLY or SWT.BORDER)
         val textOutgridData = GridData()
@@ -332,7 +384,6 @@ class WindowPlugTree(obj: Jvalue) {
         tree.addSelectionListener(object : SelectionAdapter() {
             override fun widgetSelected(e: SelectionEvent) {
 //                println("selected: " + tree.selection.first().data)
-
                 val jObj = tree.selection.first().data as Jvalue
                 val tabVisitor = StringifyTabVisitor()
                 jObj.accept(tabVisitor)
@@ -356,7 +407,9 @@ class WindowPlugTree(obj: Jvalue) {
                         && it.text.contains(inputText.text)
             }
         }
+    }
 
+    fun addMenu() {
         // right-click menu
         val menu = Menu(tree)
         tree.menu = menu
@@ -366,33 +419,36 @@ class WindowPlugTree(obj: Jvalue) {
                 for (i in items.indices) {
                     items[i].dispose()
                 }
-
+                println("actions invoked")
                 actions.forEach {
 
-                val newItem = MenuItem(menu, SWT.NONE)
+                    val newItem = MenuItem(menu, SWT.NONE)
 //                newItem.text = "Menu for " + tree.selection[0].text
-                newItem.text = it.name
-                newItem.addSelectionListener(object: SelectionAdapter() {
-                    override fun widgetSelected(e: SelectionEvent) {
-                    println("selected: " + tree.selection.first().data)
-                        it.exec(tree.selection.first())
-                    }
-                })
+                    newItem.text = it.name
+                    newItem.addSelectionListener(object: SelectionAdapter() {
+                        override fun widgetSelected(e: SelectionEvent) {
+                            println("selected: " + tree.selection.first().data)
+                            it.exec(tree.selection.first())
+                        }
+                    })
                 }
             }
         })
 
-
-}
+    }
 
     fun openTree() {
+        // replicate Jvalue data object to Tree
+        val treeVisit = JvalueTreeVisitor()
+        obj.accept(treeVisit)
+        this.addMenu()
         tree.expandAll()
 //        tree.setIcons()
         shell.pack()
         shell.setSize(1000, 700)
         shell.image = Image(display, "icon.png")
         shell.open()
-        val display = Display.getDefault()
+//        val display = Display.getDefault()
         while (!shell.isDisposed) {
             if (!display.readAndDispatch()) display.sleep()
         }
@@ -437,33 +493,123 @@ class WindowPlugTree(obj: Jvalue) {
     }
 }
 
+class Injector {
+    companion object {
+        val map: MutableMap<String, List<KClass<*>>> = mutableMapOf()
+
+        init {
+            val scanner = Scanner(File("dependency.properties"))
+            while (scanner.hasNextLine()) {
+                val line = scanner.nextLine()
+                val parts = line.split("=")
+                //parts[1].split(",").map { Class.forName(parts[1]).kotlin }
+                map[parts[0]] = parts[1].split(",")
+                    .map { Class.forName(it).kotlin }
+                //    .toMutableList()
+            }
+//            println(map)
+            scanner.close()
+        }
+
+        fun<T:Any> create(type: KClass<T>): T {
+//            println("before instance creation")
+            val instance = type.createInstance() //
+            println("instance created")
+
+//            val instance = type.constructors.first().call(jvalueObj)
+
+            type.declaredMemberProperties.forEach { it ->
+                if(it.hasAnnotation<Inject>()) {
+//                    it.isAccessible = true
+                    val key = type.simpleName + "." + it.name
+                    val obj = map[key]!!.first().createInstance()
+//                    println(key)
+                    (it as KMutableProperty<*>).setter.call(instance, obj)
+                }
+                else if(it.hasAnnotation<InjectAdd>()) {
+//                    it.isAccessible = true
+                    val key = type.simpleName + "." + it.name
+                    val objs = map[key]!!.map { it.createInstance() }
+                    (it as KMutableProperty<*>).setter.call(instance, objs)
+                }
+            }
+            return instance
+        }
+    }}
+
+
+class Injector1 {
+
+    companion object{
+        private const val configurationFilePathName: String = "dependency.properties"
+        private val mutableMap : MutableMap<String, List<KClass<*>>> = mutableMapOf()
+
+        init {
+            val scanner = Scanner(File(configurationFilePathName))
+            while (scanner.hasNextLine()){
+                val line = scanner.nextLine()
+                val parts = line.split("=")
+                mutableMap[parts[0]] = parts[1].split(",")
+                    .map{ Class.forName(it).kotlin }
+            }
+            scanner.close()
+        }
+
+        fun <T: Any> create(type: KClass<T>): T{
+            val o = type.createInstance()
+            type.declaredMemberProperties.forEach { it ->
+                if(it.hasAnnotation<Inject>()){
+                    it.isAccessible = true
+                    val key = type.simpleName + "." + it.name
+                    val obj = mutableMap[key]!!.first().createInstance()
+                    (it as KMutableProperty<*>).setter.call(o, obj)
+                }else if(it.hasAnnotation<InjectAdd>()){
+                    it.isAccessible = true
+                    val key = type.simpleName + "." + it.name
+                    val obj = mutableMap[key]!!.map { it.createInstance() }
+                    (it.getter.call(o) as MutableList<Any>).addAll(obj)
+                }
+            }
+            return o
+        }
+    }
+}
+
 
 fun main() {
 
-    var myArray = Jarray(mutableListOf<Jvalue>(
-        Jstring("one"),
-        Jstring("two"),
-        Jstring("three")
-    ))
-    var myObj = Jobject(mutableListOf<Jnode>(
-        Jnode("item01", Jstring("Verba volant, scripta manent")),
-        Jnode("item02", Jstring("Verba volant, scripta manent")),
-        Jnode("item03", Jstring("Verba volant, scripta manent"))
-    ))
+    fun createJvalueInstance(): Jnode {
+        var myArray = Jarray(
+            mutableListOf<Jvalue>(
+                Jstring("one"),
+                Jstring("two"),
+                Jstring("three")
+            )
+        )
+        var myObj = Jobject(
+            mutableListOf<Jnode>(
+                Jnode("item01", Jstring("Verba volant, scripta manent")),
+                Jnode("item02", Jstring("Verba volant, scripta manent")),
+                Jnode("item03", Jstring("Verba volant, scripta manent"))
+            )
+        )
 
-    var myNode1 = Jnode("object01", myObj)
-    var myNode2 = Jnode("array02", myArray)
+        var myNode1 = Jnode("object01", myObj)
+        var myNode2 = Jnode("array02", myArray)
 
-    var rootObj = Jobject(mutableListOf<Jnode>(myNode1, myNode2))
-    rootObj.addNode(Jnode("item04", Jnumber(5.0)))
-//    var rootArray = Jarray(mutableListOf<Jvalue>(myArray, myObj))
-//    rootArray.addValue(Jobject(mutableListOf(Jnode("item05", Jstring("item05 value")))))
-    rootObj.addNode(Jnode("item06", Jbool(true)))
-    rootObj.addNode(Jnode("item07", Jnull()))
-//    rootObj.addNode(Jnode("array03", rootArray))
+        var rootObj = Jobject(mutableListOf<Jnode>(myNode1, myNode2))
+        rootObj.addNode(Jnode("item04", Jnumber(5.0)))
+        rootObj.addNode(Jnode("item06", Jbool(true)))
+        rootObj.addNode(Jnode("item07", Jnull()))
 
-    var rootNode1 = Jnode(value = rootObj)
+        var rootNode1 = Jnode(value = rootObj)
 
-    val win = WindowPlugTree(rootNode1)
+        return rootNode1
+    }
+
+//    val win = gson_gen.WindowPlugTree()
+
+    val win = Injector.create(WindowPlugTree::class)
+
     win.openTree()
 }
