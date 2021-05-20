@@ -152,13 +152,12 @@ class EditWindow(val value: String) {
 
 }
 
-class WindowPlugTree() {
-    val obj: Jvalue
+class WindowPlugTree(val obj: Jvalue) {
+
     val shell: Shell
     var tree: Tree
     val display = Display()
 
-//    @Inject
 //    val icons: Appearance = CustomSetup()
     @Inject
     lateinit var icons: Appearance
@@ -316,51 +315,14 @@ class WindowPlugTree() {
     }
 
     init {
-        // TODO workaround parameter passing ===============================
-
-        fun createJvalueInstance(): Jnode {
-            var myArray = Jarray(
-                mutableListOf<Jvalue>(
-                    Jstring("one"),
-                    Jstring("two"),
-                    Jstring("three")
-                )
-            )
-            var myObj = Jobject(
-                mutableListOf<Jnode>(
-                    Jnode("item01", Jstring("Verba volant, scripta manent")),
-                    Jnode("item02", Jstring("Verba volant, scripta manent")),
-                    Jnode("item03", Jstring("Verba volant, scripta manent"))
-                )
-            )
-
-            var myNode1 = Jnode("object01", myObj)
-            var myNode2 = Jnode("array02", myArray)
-
-            var rootObj = Jobject(mutableListOf<Jnode>(myNode1, myNode2))
-            rootObj.addNode(Jnode("item04", Jnumber(5.0)))
-            rootObj.addNode(Jnode("item06", Jbool(true)))
-            rootObj.addNode(Jnode("item07", Jnull()))
-
-            var rootNode1 = Jnode(value = rootObj)
-
-            return rootNode1
-        }
-
-        obj = createJvalueInstance()
-
-        // TODO end ========================================================
         // init window shell
-
         shell = Shell(display)
         shell.text = "Data model visualisation"
         shell.layout = GridLayout(2, false)
-//        shell.image = display.getSystemImage(SWT.ICON_ERROR)
 
         val gridData = GridData()
         gridData.horizontalAlignment = GridData.FILL
         gridData.grabExcessHorizontalSpace = true
-
 
         // init tree widget
         tree = Tree(shell, SWT.SINGLE or SWT.BORDER)
@@ -455,12 +417,6 @@ class WindowPlugTree() {
         display.dispose()
     }
 
-//    fun TreeItem.addIconSet() {
-//        this.image = Image(display, "document-icon-32.png")
-//    }
-
-//    fun Tree.setIcons() = traverse {it.addIconSet()}
-
     // helper functions
 
     fun Tree.expandAll() = traverse { it.expanded = true }
@@ -502,32 +458,28 @@ class Injector {
             while (scanner.hasNextLine()) {
                 val line = scanner.nextLine()
                 val parts = line.split("=")
-                //parts[1].split(",").map { Class.forName(parts[1]).kotlin }
-                map[parts[0]] = parts[1].split(",")
+                map[parts[0]] = parts[1]
+                    .split(",")
                     .map { Class.forName(it).kotlin }
-                //    .toMutableList()
             }
-//            println(map)
             scanner.close()
         }
 
-        fun<T:Any> create(type: KClass<T>): T {
-//            println("before instance creation")
-            val instance = type.createInstance() //
-            println("instance created")
+        fun<T:Any> create(type: KClass<T>, jvalueObj: Jvalue): T {
 
-//            val instance = type.constructors.first().call(jvalueObj)
+//            val instance = type.createInstance() //
+
+            val instance = type.constructors.first().call(jvalueObj)
+            println("instance created")
 
             type.declaredMemberProperties.forEach { it ->
                 if(it.hasAnnotation<Inject>()) {
-//                    it.isAccessible = true
                     val key = type.simpleName + "." + it.name
                     val obj = map[key]!!.first().createInstance()
 //                    println(key)
                     (it as KMutableProperty<*>).setter.call(instance, obj)
                 }
                 else if(it.hasAnnotation<InjectAdd>()) {
-//                    it.isAccessible = true
                     val key = type.simpleName + "." + it.name
                     val objs = map[key]!!.map { it.createInstance() }
                     (it as KMutableProperty<*>).setter.call(instance, objs)
@@ -536,45 +488,6 @@ class Injector {
             return instance
         }
     }}
-
-
-class Injector1 {
-
-    companion object{
-        private const val configurationFilePathName: String = "dependency.properties"
-        private val mutableMap : MutableMap<String, List<KClass<*>>> = mutableMapOf()
-
-        init {
-            val scanner = Scanner(File(configurationFilePathName))
-            while (scanner.hasNextLine()){
-                val line = scanner.nextLine()
-                val parts = line.split("=")
-                mutableMap[parts[0]] = parts[1].split(",")
-                    .map{ Class.forName(it).kotlin }
-            }
-            scanner.close()
-        }
-
-        fun <T: Any> create(type: KClass<T>): T{
-            val o = type.createInstance()
-            type.declaredMemberProperties.forEach { it ->
-                if(it.hasAnnotation<Inject>()){
-                    it.isAccessible = true
-                    val key = type.simpleName + "." + it.name
-                    val obj = mutableMap[key]!!.first().createInstance()
-                    (it as KMutableProperty<*>).setter.call(o, obj)
-                }else if(it.hasAnnotation<InjectAdd>()){
-                    it.isAccessible = true
-                    val key = type.simpleName + "." + it.name
-                    val obj = mutableMap[key]!!.map { it.createInstance() }
-                    (it.getter.call(o) as MutableList<Any>).addAll(obj)
-                }
-            }
-            return o
-        }
-    }
-}
-
 
 fun main() {
 
@@ -609,7 +522,7 @@ fun main() {
 
 //    val win = gson_gen.WindowPlugTree()
 
-    val win = Injector.create(WindowPlugTree::class)
+    val win = Injector.create(WindowPlugTree::class, createJvalueInstance())
 
     win.openTree()
 }
