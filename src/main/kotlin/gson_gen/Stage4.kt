@@ -23,7 +23,6 @@ import kotlin.reflect.full.declaredMemberProperties
 import kotlin.reflect.full.hasAnnotation
 import kotlin.reflect.jvm.isAccessible
 
-
 interface Action {
     val name: String
     fun exec(treeItem: TreeItem)
@@ -57,16 +56,26 @@ class Edit: Action {
 interface Appearance {
     val name: String
     val iconSet: MutableMap<String, String>
+    get() = mutableMapOf(
+        "NODE_IMG" to "files-icon-32.png",
+        "LEAF_IMG" to "help-icon-32.png",
+    )
 
 }
 
 class DefaultSetup : Appearance {
     override val name: String
-        get() = "File_type_icons"
+        get() = "Default_icons"
     override val iconSet: MutableMap<String, String>
         get() = mutableMapOf(
-        "NODE_IMG" to "folder-icon-32.png",
-        "LEAF_IMG" to "document-icon-32.png",
+        "Jnode" to "folder-icon-32.png",
+        "Jarray" to "icon.png",
+        "Jobject" to "icon.png",
+        "Jvalue" to "document-icon-32.png",
+        "Jstring" to "open-icon-32.png",
+        "Jnumber" to "open-icon-32.png",
+        "Jbool" to "open-icon-32.png",
+        "Jbool" to "icon.png",
         )
 }
 
@@ -166,6 +175,30 @@ class WindowPlugTree(val obj: Jvalue) {
     @InjectAdd
     lateinit var actions: MutableList<gson_gen.Action>
 
+    fun TreeItem.appendIcon(jvalue: Jvalue) {
+        var imagePath = "help-icon-64.png"
+            if (icons.iconSet.containsKey(jvalue::class.toString().substringAfter("."))) {
+                imagePath = icons.iconSet[jvalue::class.toString().substringAfter(".")].toString()
+            } else {
+                if (icons.iconSet.isEmpty()) {
+                    imagePath = if (jvalue.isNode) {
+                        "files-icon-32.png"
+                    } else {
+                        "files-icon-32.png"
+                    }
+            }
+
+        }
+        println("TreeItem.appendIcon(jvalue: Jvalue)")
+        println(jvalue::class.toString().substringAfter("."))
+        println(imagePath)
+        this.image = Image(display, imagePath)
+    }
+
+
+
+
+    // parse Jvalue to Tree
     inner class JvalueTreeVisitor(): Visitor {
 
         // use stack for refer parent node
@@ -182,20 +215,11 @@ class WindowPlugTree(val obj: Jvalue) {
             return current
         }
 
-        private fun TreeItem.appendIcon() {
-            var jvalue = this.data as Jvalue
-            if(jvalue.isNode) {
-                this.image = Image(display, icons.iconSet["NODE_IMG"])
-            } else {
-                this.image = Image(display, icons.iconSet["LEAF_IMG"])
-            }
-        }
-
         override fun visit(value: Jnode) {
             val current = getTreeItem()
             current.text = value.key
             current.data = value.value
-            current.appendIcon()
+            current.appendIcon(value)
             treeStack.push(current)
         }
 
@@ -219,28 +243,28 @@ class WindowPlugTree(val obj: Jvalue) {
             val current = getTreeItem()
             current.text = "string: $value"
             current.data = value
-//            current.appendIcon()
+            current.appendIcon(value)
         }
 
         override fun visit(value: Jnumber) {
             val current = getTreeItem()
             current.text = "number: $value"
             current.data = value
-//            current.appendIcon()
+            current.appendIcon(value)
         }
 
         override fun visit(value: Jbool) {
             val current = getTreeItem()
             current.text = "bool: $value"
             current.data = value
-//            current.appendIcon()
+            current.appendIcon(value)
         }
 
         override fun visit(value: Jnull) {
             val current = getTreeItem()
             current.text = "null"
             current.data = Jstring("null")
-//            current.appendIcon()
+            current.appendIcon(value)
         }
 
         override fun afterVisit(value: Jnode) {
@@ -369,6 +393,10 @@ class WindowPlugTree(val obj: Jvalue) {
                         && it.text.contains(inputText.text)
             }
         }
+    }
+
+    fun setIcons() {
+
     }
 
     fun addMenu() {
@@ -525,4 +553,17 @@ fun main() {
     val win = Injector.create(WindowPlugTree::class, createJvalueInstance())
 
     win.openTree()
+
+//    val jnode = Jnode("item01", Jstring("Verba volant, scripta manent"))
+//
+//    val myMap = mutableMapOf(
+//        "Jnode" to "folder-icon-32.png",
+//        "Jvalue" to "document-icon-32.png",
+//        "Jstring" to "open-icon-32.png",
+//        "Jnumber" to "open-icon-32.png",
+//        "Jbool" to "open-icon-32.png",
+//    )
+//
+//    println(jnode::class.toString().substringAfter("."))
+
 }
