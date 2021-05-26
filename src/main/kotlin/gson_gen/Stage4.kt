@@ -56,11 +56,6 @@ class Edit: Action {
 interface Appearance {
     val name: String
     val iconSet: MutableMap<String, String>
-    get() = mutableMapOf(
-        "NODE_IMG" to "files-icon-32.png",
-        "LEAF_IMG" to "help-icon-32.png",
-    )
-
 }
 
 class DefaultSetup : Appearance {
@@ -68,14 +63,12 @@ class DefaultSetup : Appearance {
         get() = "Default_icons"
     override val iconSet: MutableMap<String, String>
         get() = mutableMapOf(
-        "Jnode" to "folder-icon-32.png",
-        "Jarray" to "icon.png",
-        "Jobject" to "icon.png",
-        "Jvalue" to "document-icon-32.png",
-        "Jstring" to "open-icon-32.png",
-        "Jnumber" to "open-icon-32.png",
-        "Jbool" to "open-icon-32.png",
-        "Jbool" to "icon.png",
+        "Jarray" to "folder-mail-32.png",
+        "Jobject" to "folder-lock-32.png",
+        "Jstring" to "text-doc-32.png",
+        "Jnumber" to "json-32.png",
+        "Jbool" to "code-32.png",
+        "Jnull" to "blank-32.png",
         )
 }
 
@@ -84,9 +77,16 @@ class CustomSetup : Appearance {
         get() = "File_type_icons"
     override val iconSet: MutableMap<String, String>
         get() = mutableMapOf(
-            "NODE_IMG" to "files-icon-32.png",
-            "LEAF_IMG" to "help-icon-32.png",
+            "Jobject" to "folder-icon-32.png",
+            "Jarray" to "folder-yel-32.png",
         )
+}
+
+class EmptySetup : Appearance {
+    override val name: String
+        get() = "No_icons"
+    override val iconSet: MutableMap<String, String>
+        get() = mutableMapOf()
 }
 
 @Target(AnnotationTarget.PROPERTY)
@@ -106,7 +106,7 @@ class EditWindow(val value: String) {
         shell = Shell(display)
         shell.text = "Editor"
         shell.layout = GridLayout(2, false)
-        shell.image = Image(display, "icon.png")
+        shell.image = Image(display, "iscte-icon-32.png")
 
 
         val gridData = GridData()
@@ -176,18 +176,17 @@ class WindowPlugTree(val obj: Jvalue) {
     lateinit var actions: MutableList<gson_gen.Action>
 
     fun TreeItem.appendIcon(jvalue: Jvalue) {
-        var imagePath = "help-icon-64.png"
+        var imagePath = "help-icon-32.png"
             if (icons.iconSet.containsKey(jvalue::class.toString().substringAfter("."))) {
                 imagePath = icons.iconSet[jvalue::class.toString().substringAfter(".")].toString()
             } else {
-                if (icons.iconSet.isEmpty()) {
+                if (icons.iconSet.isEmpty()) { // default icons
                     imagePath = if (jvalue.isNode) {
-                        "files-icon-32.png"
+                        "folder-icon-32.png"
                     } else {
-                        "files-icon-32.png"
+                        "help-icon-32.png"
                     }
             }
-
         }
         println("TreeItem.appendIcon(jvalue: Jvalue)")
         println(jvalue::class.toString().substringAfter("."))
@@ -203,6 +202,7 @@ class WindowPlugTree(val obj: Jvalue) {
 
         // use stack for refer parent node
         var treeStack = Stack<TreeItem>()
+        var namesStack = Stack<String>()
 
         private fun getTreeItem(): TreeItem {
 
@@ -216,72 +216,78 @@ class WindowPlugTree(val obj: Jvalue) {
         }
 
         override fun visit(value: Jnode) {
+//            val current = getTreeItem()
+//            current.text = value.key
+//            current.data = value.value
+//            current.appendIcon(value)
+//            treeStack.push(current)
+
+            namesStack.push(value.key)
+        }
+
+        override fun visit(value: Jobject) {
             val current = getTreeItem()
-            current.text = value.key
-            current.data = value.value
+            current.text = namesStack.read()
+            current.data = value
             current.appendIcon(value)
             treeStack.push(current)
         }
 
-        override fun visit(value: Jobject) {
-//            val current = getTreeItem()
-//            current.text = "object"
-//            current.data = value
-//            current.appendIcon()
-//            treeStack.push(current)
-        }
-
         override fun visit(value: Jarray) {
-//            val current = getTreeItem()
-//            current.text = "array"
-//            current.data = value
-//            current.appendIcon()
-//            treeStack.push(current)
+            val current = getTreeItem()
+            val arrName = namesStack.read()
+            current.text = arrName
+            value.value.forEach { namesStack.push("$arrName element ") }
+            current.data = value
+            current.appendIcon(value)
+            treeStack.push(current)
         }
 
         override fun visit(value: Jstring) {
             val current = getTreeItem()
-            current.text = "string: $value"
+            current.text = namesStack.pull() + " string: $value"
             current.data = value
             current.appendIcon(value)
         }
 
         override fun visit(value: Jnumber) {
             val current = getTreeItem()
-            current.text = "number: $value"
+            current.text = namesStack.pull() + " number: $value"
             current.data = value
             current.appendIcon(value)
         }
 
         override fun visit(value: Jbool) {
             val current = getTreeItem()
-            current.text = "bool: $value"
+            current.text = namesStack.pull() + " bool: $value"
             current.data = value
             current.appendIcon(value)
         }
 
         override fun visit(value: Jnull) {
             val current = getTreeItem()
-            current.text = "null"
+            current.text = namesStack.pull() + " null"
             current.data = Jstring("null")
             current.appendIcon(value)
         }
 
         override fun afterVisit(value: Jnode) {
             if(treeStack.stackObj.size > 0) {
-                treeStack.pull()
+//                treeStack.pull()
             }
         }
 
         override fun afterVisit(value: Jobject) {
             if(treeStack.stackObj.size > 0) {
-//                treeStack.pull()
+                treeStack.pull()
+//                namesStack.pull()
             }
         }
 
         override fun afterVisit(value: Jarray) {
             if(treeStack.stackObj.size > 0) {
-//                treeStack.pull()
+                treeStack.pull()
+                namesStack.pull()
             }
         }
     }
@@ -436,7 +442,7 @@ class WindowPlugTree(val obj: Jvalue) {
 //        tree.setIcons()
         shell.pack()
         shell.setSize(1000, 700)
-        shell.image = Image(display, "icon.png")
+        shell.image = Image(display, "iscte-icon-32.png")
         shell.open()
 //        val display = Display.getDefault()
         while (!shell.isDisposed) {
