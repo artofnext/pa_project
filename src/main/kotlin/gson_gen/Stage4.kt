@@ -52,7 +52,15 @@ class Edit: Action {
         }
         window.open()
     }
+}
 
+class Delete: Action {
+    override val name: String
+        get() = "Delete"
+
+    override fun exec(treeItem: TreeItem) {
+        treeItem.dispose()
+    }
 }
 
 interface Appearance {
@@ -156,11 +164,6 @@ class EditWindow(val value: Jnode) {
         shell.pack()
         shell.setSize(350, 100)
         shell.open()
-//        val display = Display.getDefault()
-//        while (!shell.isDisposed) {
-//            if (!display.readAndDispatch()) display.sleep()
-//        }
-//        display.dispose()
     }
 
 }
@@ -415,6 +418,20 @@ class WindowPlugTree(val obj: Jvalue) {
                         && it.text.contains(inputText.text)
             }
         }
+
+        // Button
+        val button = Button(shell, SWT.PUSH)
+        button.text = "Refresh"
+        val buttonGridData = GridData()
+        buttonGridData.horizontalAlignment = GridData.FILL
+        buttonGridData.grabExcessHorizontalSpace = true
+        button.layoutData = buttonGridData
+        button.addSelectionListener(object: SelectionAdapter() {
+            override fun widgetSelected(e: SelectionEvent) {
+                refresh()
+            }
+        })
+
     }
 
     fun setIcons() {
@@ -442,12 +459,21 @@ class WindowPlugTree(val obj: Jvalue) {
                             println("selected: " + tree.selection.first().data)
 
                             it.exec(tree.selection.first())
+//                            refresh()
                         }
                     })
                 }
             }
         })
 
+    }
+
+    fun refresh() {
+        tree.removeAll()
+        val treeVisit = JvalueTreeVisitor()
+        obj.accept(treeVisit)
+        tree.expandAll()
+//        tree.redraw()
     }
 
     fun openTree() {
