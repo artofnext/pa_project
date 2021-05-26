@@ -79,6 +79,7 @@ class CustomSetup : Appearance {
         get() = mutableMapOf(
             "Jobject" to "folder-icon-32.png",
             "Jarray" to "folder-yel-32.png",
+            "Jnumber" to "json-32.png",
         )
 }
 
@@ -316,11 +317,11 @@ class WindowPlugTree(val obj: Jvalue) {
         }
 
         override fun visit(value: Jnumber) {
-            str += "\t".repeat(depth) + value.value.toString()
+            str += "\t".repeat(depth) + value.value.toString() + ",\n"
         }
 
         override fun visit(value: Jbool) {
-            str += "\t".repeat(depth) + value.value.toString()
+            str += "\t".repeat(depth) + value.value.toString() + ",\n"
         }
 
         override fun visit(value: Jnull) {
@@ -541,10 +542,35 @@ fun main() {
             )
         )
 
+        var myObj1 = Jobject(
+            mutableListOf<Jnode>(
+                Jnode("Numbers", Jarray(
+                    mutableListOf<Jvalue>(
+                        Jnumber(21658),
+                        Jnumber(45),
+                        Jnumber(5478.25)
+                    ))),
+                Jnode("Text", Jarray(
+                    mutableListOf<Jvalue>(
+                        Jstring("Some text"),
+                        Jstring("Some other text"),
+                        Jstring("Some text again")
+                    ))),
+                Jnode("Booleans", Jarray(
+                    mutableListOf<Jvalue>(
+                        Jbool(true),
+                        Jbool(false),
+                        Jbool(false)
+                    )))
+            )
+        )
+
         var myNode1 = Jnode("object01", myObj)
         var myNode2 = Jnode("array02", myArray)
+        var myNode3 = Jnode("complex object", myObj1)
 
-        var rootObj = Jobject(mutableListOf<Jnode>(myNode1, myNode2))
+
+        var rootObj = Jobject(mutableListOf<Jnode>(myNode1, myNode2, myNode3))
         rootObj.addNode(Jnode("item04", Jnumber(5.0)))
         rootObj.addNode(Jnode("item06", Jbool(true)))
         rootObj.addNode(Jnode("item07", Jnull()))
