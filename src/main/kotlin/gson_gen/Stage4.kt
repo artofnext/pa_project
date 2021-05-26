@@ -392,9 +392,9 @@ class WindowPlugTree(val obj: Jvalue) {
         tree.addSelectionListener(object : SelectionAdapter() {
             override fun widgetSelected(e: SelectionEvent) {
 //                println("selected: " + tree.selection.first().data)
-                val jObj = tree.selection.first().data as Jvalue
+                val jObj = tree.selection.first().data as Jnode
                 val tabVisitor = StringifyTabVisitor()
-                jObj.accept(tabVisitor)
+                jObj.value.accept(tabVisitor)
                 textOut.text = tabVisitor.str
             }
         })
