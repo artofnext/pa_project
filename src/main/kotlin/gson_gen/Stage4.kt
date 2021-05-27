@@ -61,6 +61,28 @@ class Delete: Action {
     }
 }
 
+interface Presentation {
+    val name: String
+    fun change(value: TreeItem) {}
+}
+
+class DefaultPresentationSetup: Presentation {
+    override val name: String
+        get() = "Default Presentation"
+}
+
+class PresentationSetup: Presentation {
+    override val name: String
+        get() = "Changed text Presentation"
+
+    override fun change(value: TreeItem) {
+        if ((value.data as Jnode).value::class == Jbool::class) {
+            value.text = "Its Jbool!"
+        }
+    }
+
+}
+
 interface Appearance {
     val name: String
     val iconSet: MutableMap<String, String>
@@ -103,6 +125,9 @@ annotation class InjectAdd
 
 @Target(AnnotationTarget.PROPERTY)
 annotation class Inject
+
+@Target(AnnotationTarget.PROPERTY)
+annotation class Inject1
 
 class EditWindow(val value: Jnode) {
     val shell: Shell
@@ -167,6 +192,8 @@ class WindowPlugTree(val obj: Jvalue) {
 //    val icons: Appearance = CustomSetup()
     @Inject
     lateinit var icons: Appearance
+    @Inject1
+    lateinit var presentation: Presentation
 
 //    val actions: MutableList<Action> = mutableListOf<Action>(Open(), Edit())
     @InjectAdd
@@ -185,10 +212,10 @@ class WindowPlugTree(val obj: Jvalue) {
                     }
                 }
             }
-//        println(jvalue::class.toString().substringAfter("."))
-//        println(imagePath)
         this.image = Image(display, imagePath)
     }
+
+
 
     // parse Jvalue to Tree
     inner class JvalueTreeVisitor(): Visitor {
@@ -211,6 +238,7 @@ class WindowPlugTree(val obj: Jvalue) {
         override fun visit(value: Jnode) {
             nodesStack.push(value)
             namesStack.push(value.key)
+//            presentaton.change(value)
         }
 
         override fun visit(value: Jobject) {
@@ -218,6 +246,7 @@ class WindowPlugTree(val obj: Jvalue) {
             current.text = namesStack.read()
             current.data = nodesStack.read()
             current.appendIcon(value)
+            presentation.change(current)
             treeStack.push(current)
         }
 
@@ -230,6 +259,7 @@ class WindowPlugTree(val obj: Jvalue) {
             current.data = arrNode
             value.value.forEach { nodesStack.push(arrNode) }
             current.appendIcon(value)
+            presentation.change(current)
             treeStack.push(current)
         }
 
@@ -237,6 +267,7 @@ class WindowPlugTree(val obj: Jvalue) {
             val current = getTreeItem()
             current.text = namesStack.pull() + " string: $value"
             current.data = nodesStack.pull()
+            presentation.change(current)
             current.appendIcon(value)
         }
 
@@ -244,6 +275,7 @@ class WindowPlugTree(val obj: Jvalue) {
             val current = getTreeItem()
             current.text = namesStack.pull() + " number: $value"
             current.data = nodesStack.pull()
+            presentation.change(current)
             current.appendIcon(value)
         }
 
@@ -251,6 +283,7 @@ class WindowPlugTree(val obj: Jvalue) {
             val current = getTreeItem()
             current.text = namesStack.pull() + " bool: $value"
             current.data = nodesStack.pull()
+            presentation.change(current)
             current.appendIcon(value)
         }
 
@@ -258,6 +291,7 @@ class WindowPlugTree(val obj: Jvalue) {
             val current = getTreeItem()
             current.text = namesStack.pull() + " null"
             current.data = nodesStack.pull()
+            presentation.change(current)
             current.appendIcon(value)
         }
 
@@ -509,6 +543,10 @@ class Injector {
                     val key = type.simpleName + "." + it.name
                     val objs = map[key]!!.map { it.createInstance() }
                     (it as KMutableProperty<*>).setter.call(instance, objs)
+                } else if (it.hasAnnotation<Inject1>()) {
+                    val key = type.simpleName + "." + it.name
+                    val obj = map[key]!!.first().createInstance()
+                    (it as KMutableProperty<*>).setter.call(instance, obj)
                 }
             }
             return instance
