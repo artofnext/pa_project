@@ -45,8 +45,6 @@ class Edit: Action {
         val window = EditWindow(treeItem.data as Jnode)
         window.shell.addDisposeListener {
             (treeItem.data as Jnode).key = window.edited
-//            println("dispose listener")
-//            println(window.edited)
         }
         window.open()
     }
