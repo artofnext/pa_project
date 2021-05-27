@@ -44,4 +44,11 @@ It is also possible to filter elements of a model using a predicate passed as a 
 ### Visualisation
 Visualization is done using [Eclipse SWT library.](https://www.eclipse.org/swt/)
 To use this part, you must import this library into your project
-# END
+The data model is presented visually in the form of a tree structure. Search by tree structure and display of the selected node as JSON is implemented.
+
+### Visualization plugin development
+It is provided to add 2 types of plugins: to add icons for nodes and actions.
+Plugin connection configuration is carried out in the file `dependency.properties`.
+
+Each plugin must implement the corresponding interface, that is, `Appiarance` for icon abortions and `Action` for actions.
+The source code provides examples of implementations of three different icon sets and three actions.
