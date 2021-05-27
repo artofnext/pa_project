@@ -1,6 +1,5 @@
 package gson_gen
 
-import Dummy
 import org.eclipse.swt.SWT
 import org.eclipse.swt.events.SelectionAdapter
 import org.eclipse.swt.events.SelectionEvent

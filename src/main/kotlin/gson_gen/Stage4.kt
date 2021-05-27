@@ -35,7 +35,6 @@ class Open: Action {
         val win = WindowTree(Jnode(value = (treeItem.data as Jvalue)))
         win.openTree()
     }
-
 }
 
 class Edit: Action {
@@ -43,12 +42,11 @@ class Edit: Action {
         get() = "Edit"
 
     override fun exec(treeItem: TreeItem) {
-//        treeItem.text = "new text"
         val window = EditWindow(treeItem.data as Jnode)
         window.shell.addDisposeListener {
             (treeItem.data as Jnode).key = window.edited
-            println("dispose listener")
-            println(window.edited)
+//            println("dispose listener")
+//            println(window.edited)
         }
         window.open()
     }
@@ -113,7 +111,6 @@ class EditWindow(val value: Jnode) {
 
     init {
         // init window shell
-
         shell = Shell(display)
         shell.text = "Editor"
         shell.layout = GridLayout(2, false)
@@ -123,9 +120,6 @@ class EditWindow(val value: Jnode) {
         val gridData = GridData()
         gridData.horizontalAlignment = GridData.FILL
         gridData.grabExcessHorizontalSpace = true
-
-//        val messageText = Text(shell, SWT.BORDER)
-//        messageText.text = "New name:"
 
         // text field
         val inputText = Text(shell, SWT.BORDER)
@@ -137,11 +131,12 @@ class EditWindow(val value: Jnode) {
         button.addSelectionListener(object: SelectionAdapter() {
             override fun widgetSelected(e: SelectionEvent) {
                 edited = inputText.text
-                println(edited)
+//                println(edited)
                 // TODO save value and close
                 shell.close()
             }
         })
+
         // init input text widget config
         inputText.text = value.key
         val inputGridData = GridData()
@@ -149,15 +144,10 @@ class EditWindow(val value: Jnode) {
         inputGridData.grabExcessHorizontalSpace = true
         inputText.layoutData = inputGridData
         inputText.addModifyListener {
-            println(inputText.text.toString())
+//            println(inputText.text.toString())
             button.isEnabled = inputText.text.toString() != ""
             edited = inputText.text.toString()
-
         }
-
-//        shell.addListener(SWT.Close) { event -> event.doit = false }
-
-//        shell.setVisible(false)
     }
 
     fun open() {
@@ -193,16 +183,12 @@ class WindowPlugTree(val obj: Jvalue) {
                     } else {
                         "help-icon-32.png"
                     }
+                }
             }
-        }
-        println("TreeItem.appendIcon(jvalue: Jvalue)")
-        println(jvalue::class.toString().substringAfter("."))
-        println(imagePath)
+//        println(jvalue::class.toString().substringAfter("."))
+//        println(imagePath)
         this.image = Image(display, imagePath)
     }
-
-
-
 
     // parse Jvalue to Tree
     inner class JvalueTreeVisitor(): Visitor {
@@ -213,7 +199,6 @@ class WindowPlugTree(val obj: Jvalue) {
         var nodesStack = Stack<Jnode>()
 
         private fun getTreeItem(): TreeItem {
-
             val current: TreeItem
             if (treeStack.stackObj.size < 1) {
                 current = TreeItem(tree, SWT.NONE)
@@ -224,12 +209,6 @@ class WindowPlugTree(val obj: Jvalue) {
         }
 
         override fun visit(value: Jnode) {
-//            val current = getTreeItem()
-//            current.text = value.key
-//            current.data = value.value
-//            current.appendIcon(value)
-//            treeStack.push(current)
-
             nodesStack.push(value)
             namesStack.push(value.key)
         }
@@ -237,7 +216,6 @@ class WindowPlugTree(val obj: Jvalue) {
         override fun visit(value: Jobject) {
             val current = getTreeItem()
             current.text = namesStack.read()
-//            current.data = value
             current.data = nodesStack.read()
             current.appendIcon(value)
             treeStack.push(current)
@@ -249,7 +227,6 @@ class WindowPlugTree(val obj: Jvalue) {
             val arrNode = nodesStack.read()
             current.text = arrName
             value.value.forEach { namesStack.push("$arrName element ") }
-//            current.data = value
             current.data = arrNode
             value.value.forEach { nodesStack.push(arrNode) }
             current.appendIcon(value)
@@ -259,7 +236,6 @@ class WindowPlugTree(val obj: Jvalue) {
         override fun visit(value: Jstring) {
             val current = getTreeItem()
             current.text = namesStack.pull() + " string: $value"
-//            current.data = value
             current.data = nodesStack.pull()
             current.appendIcon(value)
         }
@@ -267,7 +243,6 @@ class WindowPlugTree(val obj: Jvalue) {
         override fun visit(value: Jnumber) {
             val current = getTreeItem()
             current.text = namesStack.pull() + " number: $value"
-//            current.data = value
             current.data = nodesStack.pull()
             current.appendIcon(value)
         }
@@ -275,7 +250,6 @@ class WindowPlugTree(val obj: Jvalue) {
         override fun visit(value: Jbool) {
             val current = getTreeItem()
             current.text = namesStack.pull() + " bool: $value"
-//            current.data = value
             current.data = nodesStack.pull()
             current.appendIcon(value)
         }
@@ -283,22 +257,13 @@ class WindowPlugTree(val obj: Jvalue) {
         override fun visit(value: Jnull) {
             val current = getTreeItem()
             current.text = namesStack.pull() + " null"
-//            current.data = Jstring("null")
             current.data = nodesStack.pull()
             current.appendIcon(value)
-        }
-
-        override fun afterVisit(value: Jnode) {
-            if(treeStack.stackObj.size > 0) {
-//                treeStack.pull()
-            }
-//            nodesStack.pull()
         }
 
         override fun afterVisit(value: Jobject) {
             if(treeStack.stackObj.size > 0) {
                 treeStack.pull()
-//                namesStack.pull()
             }
         }
 
@@ -315,17 +280,17 @@ class WindowPlugTree(val obj: Jvalue) {
     class StringifyTabVisitor : Visitor {
         var str = ""
         var depth = 0
-        override fun visit(node: Jnode) {
-            str += "\t".repeat(depth) + "\"${node.key}\":\n"
+        override fun visit(value: Jnode) {
+            str += "\t".repeat(depth) + "\"${value.key}\":\n"
             depth ++
         }
 
-        override fun visit(obj: Jobject) {
+        override fun visit(value: Jobject) {
             str += "\t".repeat(depth) + "{\n"
             depth ++
         }
 
-        override fun visit(arr: Jarray) {
+        override fun visit(value: Jarray) {
             str += "\t".repeat(depth) +  "[\n"
             depth ++
         }
@@ -382,7 +347,6 @@ class WindowPlugTree(val obj: Jvalue) {
         treeGridData.grabExcessHorizontalSpace = true
         tree.layoutData = treeGridData
 
-
         // init output text widget
         val textOut = Text(shell, SWT.WRAP or SWT.READ_ONLY or SWT.BORDER)
         val textOutgridData = GridData()
@@ -434,10 +398,6 @@ class WindowPlugTree(val obj: Jvalue) {
 
     }
 
-    fun setIcons() {
-
-    }
-
     fun addMenu() {
         // right-click menu
         val menu = Menu(tree)
@@ -448,16 +408,13 @@ class WindowPlugTree(val obj: Jvalue) {
                 for (i in items.indices) {
                     items[i].dispose()
                 }
-                println("actions invoked")
+//                println("actions invoked")
                 actions.forEach {
-
                     val newItem = MenuItem(menu, SWT.NONE)
-//                newItem.text = "Menu for " + tree.selection[0].text
                     newItem.text = it.name
                     newItem.addSelectionListener(object: SelectionAdapter() {
                         override fun widgetSelected(e: SelectionEvent) {
-                            println("selected: " + tree.selection.first().data)
-
+//                            println("selected: " + tree.selection.first().data)
                             it.exec(tree.selection.first())
 //                            refresh()
                         }
@@ -465,7 +422,6 @@ class WindowPlugTree(val obj: Jvalue) {
                 }
             }
         })
-
     }
 
     fun refresh() {
@@ -473,7 +429,6 @@ class WindowPlugTree(val obj: Jvalue) {
         val treeVisit = JvalueTreeVisitor()
         obj.accept(treeVisit)
         tree.expandAll()
-//        tree.redraw()
     }
 
     fun openTree() {
@@ -482,12 +437,10 @@ class WindowPlugTree(val obj: Jvalue) {
         obj.accept(treeVisit)
         this.addMenu()
         tree.expandAll()
-//        tree.setIcons()
         shell.pack()
         shell.setSize(1000, 700)
         shell.image = Image(display, "iscte-icon-32.png")
         shell.open()
-//        val display = Display.getDefault()
         while (!shell.isDisposed) {
             if (!display.readAndDispatch()) display.sleep()
         }
@@ -544,16 +497,12 @@ class Injector {
 
         fun<T:Any> create(type: KClass<T>, jvalueObj: Jvalue): T {
 
-//            val instance = type.createInstance() //
-
             val instance = type.constructors.first().call(jvalueObj)
-            println("instance created")
-
+//            println("instance created")
             type.declaredMemberProperties.forEach { it ->
                 if(it.hasAnnotation<Inject>()) {
                     val key = type.simpleName + "." + it.name
                     val obj = map[key]!!.first().createInstance()
-//                    println(key)
                     (it as KMutableProperty<*>).setter.call(instance, obj)
                 }
                 else if(it.hasAnnotation<InjectAdd>()) {
